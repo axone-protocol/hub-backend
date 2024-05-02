@@ -16,14 +16,19 @@ export class SupplyService {
     ) { }
     
     async fetchAndSaveCurrentSupply() {
-        const currentSupply = await this.fetchCurrentSupply();
-        await this.prismaService.historicalSupply.create({
-            data: currentSupply,
-        });
+        try {
+            const currentSupply = await this.fetchCurrentSupply();
+            await this.prismaService.historicalSupply.create({
+                data: currentSupply,
+            });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (e: any) {
+            throw new Error(e.message);
+        }
     }
 
     private async fetchCurrentSupply(): Promise<CurrentSupplyDto> {
-        const { amount: { amount: supply } } = await this.okp4Service.getSypplyByDenom(config.app.tokenDenom);
+        const { amount: { amount: supply } } = await this.okp4Service.getSupplyByDenom(config.app.tokenDenom);
         const time = new Date();
         const change = await this.calculateSupplyChange(supply);
 
@@ -47,7 +52,11 @@ export class SupplyService {
         let change = 0;
 
         if (currentSupply && newSupply) {
-            change = Big(newSupply).minus(currentSupply.supply).div(currentSupply.supply).toNumber();
+            if (Number.parseFloat(currentSupply.supply) === 0) {
+                change = Big(newSupply).toNumber();
+            } else {
+                change = Big(newSupply).minus(currentSupply.supply).div(currentSupply.supply).toNumber();
+            }
         }
         
         return change;

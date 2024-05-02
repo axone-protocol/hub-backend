@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-namespace */
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace HttpRequester {
   export async function get<T>(url: string, headers?: HeadersInit): Promise<T> {
     const res = await fetch(url, {
