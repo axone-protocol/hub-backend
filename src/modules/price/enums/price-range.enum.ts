@@ -1,4 +1,4 @@
-export enum Range {
+export enum PriceRange {
   ALL = 'all',
   DAY = 'day',
   WEEK = 'week',

@@ -39,7 +39,7 @@ export class OsmosisService {
     );
   }
 
-  async errorHandleWrapper<T>(fn: any): Promise<T> {
+  private async errorHandleWrapper<T>(fn: any): Promise<T> {
     try {
       const response: GSFResponse<T> = await fn();
 
@@ -53,7 +53,7 @@ export class OsmosisService {
     }
   }
 
-  isFailedResponse<T>(response: GSFResponse<T>): response is FailedResponse {
+  private isFailedResponse<T>(response: GSFResponse<T>): response is FailedResponse {
     return (response as FailedResponse).message !== undefined;
   }
 }

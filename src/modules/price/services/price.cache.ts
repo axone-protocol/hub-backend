@@ -6,10 +6,10 @@ import { PrismaService } from '@core/lib/prisma.service';
 
 import { HistoricalPrice } from '../dtos/historical-price.dto';
 import { TimeBucketDto } from '../dtos/time-bucket.dto';
-import { Range } from '../enums/range.enum';
+import { PriceRange } from '../enums/price-range.enum';
 
 @Injectable()
-export class HistoricalPriceCache implements OnModuleInit {
+export class PriceCache implements OnModuleInit {
   private all: HistoricalPrice[] = [];
   private day: HistoricalPrice[] = [];
   private week: HistoricalPrice[] = [];
@@ -17,25 +17,27 @@ export class HistoricalPriceCache implements OnModuleInit {
   private threeMonth: HistoricalPrice[] = [];
   private year: HistoricalPrice[] = [];
 
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService
+  ) { }
 
   async onModuleInit() {
     await this.init();
   }
 
-  getCacheByRange(range: Range): HistoricalPrice[] {
+  getCacheByRange(range: PriceRange): HistoricalPrice[] {
     switch (range) {
-      case Range.ALL:
+      case PriceRange.ALL:
         return this.all;
-      case Range.DAY:
+      case PriceRange.DAY:
         return this.day;
-      case Range.WEEK:
+      case PriceRange.WEEK:
         return this.week;
-      case Range.MONTH:
+      case PriceRange.MONTH:
         return this.month;
-      case Range.THREE_MONTH:
+      case PriceRange.THREE_MONTH:
         return this.threeMonth;
-      case Range.YEAR:
+      case PriceRange.YEAR:
         return this.year;
       default:
         console.log('Forgot to add new case');
