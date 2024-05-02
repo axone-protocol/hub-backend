@@ -12,3 +12,10 @@ model HistoricalPrices {
   price Float
   @@map("historical_prices")
 }
+
+model HistoricalSupply {
+  time DateTime @id @unique
+  supply String
+  change Float
+  @@map("historical_supply")
+}

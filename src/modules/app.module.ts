@@ -1,9 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 
-import { HistoricalPriceModule } from './historical-price/historical-price.module';
+import { PriceModule } from './price/price.module';
+import { SupplyModule } from './supply/supply.module';
 
 @Module({
-  imports: [ScheduleModule.forRoot(), HistoricalPriceModule],
+  imports: [
+    ScheduleModule.forRoot(),
+    PriceModule,
+    SupplyModule,
+  ],
 })
 export class AppModule {}

@@ -4,18 +4,19 @@ import { Routes } from '@core/enums/routes.enum';
 import { SchemaValidatePipe } from '@core/pipes/schema-validate.pipe';
 
 import { QueryParam } from './enums/query-param.enum';
-import { Range } from './enums/range.enum';
+import { PriceRange } from './enums/price-range.enum';
 import { RangeSchema } from './schemas/range.schema';
-import { HistoricalPriceCache } from './services/historical-price.cache';
+import { PriceCache } from './services/price.cache';
+import { PriceEndpoints } from './enums/price-endpoints.enum';
 
-@Controller(Routes.HISTORICAL_PRICE)
-export class HistoricalPriceController {
-  constructor(private readonly cache: HistoricalPriceCache) {}
+@Controller(Routes.PRICE)
+export class PriceController {
+  constructor(private readonly cache: PriceCache) {}
 
-  @Get()
+  @Get(PriceEndpoints.HISTORICAL)
   async getHistoricalPrice(
     @Query(QueryParam.RANGE, new SchemaValidatePipe(RangeSchema))
-    range: Range,
+    range: PriceRange,
   ) {
     return this.cache.getCacheByRange(range);
   }

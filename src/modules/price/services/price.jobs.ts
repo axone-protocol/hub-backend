@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 
-import { HistoricalPriceCache } from './historical-price.cache';
-import { HistoricalPriceService } from './historical-price.service';
+import { PriceCache } from './price.cache';
+import { PriceService } from './price.service';
 
 @Injectable()
-export class HistoricalPriceJobs {
+export class PriceJobs {
   constructor(
-    private readonly cache: HistoricalPriceCache,
-    private readonly service: HistoricalPriceService,
+    private readonly cache: PriceCache,
+    private readonly service: PriceService,
   ) {}
 
   @Cron('*/5 * * * *')
