@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BadRequestException, Injectable } from '@nestjs/common';
 
 import { config } from '@core/config/config';
@@ -39,6 +38,7 @@ export class OsmosisService {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async errorHandleWrapper<T>(fn: any): Promise<T> {
     try {
       const response: GSFResponse<T> = await fn();
@@ -48,6 +48,7 @@ export class OsmosisService {
       }
 
       return response as T;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       throw new BadRequestException(e.message);
     }

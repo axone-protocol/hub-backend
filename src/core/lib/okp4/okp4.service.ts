@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { config } from "@core/config/config";
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { SupplyByDenomResponse } from "./responses/supply-by-denom.response";
@@ -16,7 +15,7 @@ export class Okp4Service {
         return `${this.BASE_URL}/${endpoint}${params ? `?${params}` : ''}`;
     }
 
-    async getSypplyByDenom(denom: string): Promise<SupplyByDenomResponse> {
+    async getSupplyByDenom(denom: string): Promise<SupplyByDenomResponse> {
         return this.errorHandleWrapper(
             HttpRequester.get.bind(
                 null,
@@ -28,6 +27,7 @@ export class Okp4Service {
         );
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private async errorHandleWrapper<T>(fn: any): Promise<T> {
         try {
           const response: GSFResponse<T> = await fn();
@@ -37,6 +37,7 @@ export class Okp4Service {
           }
     
           return response as T;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
           throw new BadRequestException(e.message);
         }
