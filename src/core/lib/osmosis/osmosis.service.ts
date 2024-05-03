@@ -2,7 +2,6 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 
 import { config } from '@core/config/config';
 import { createUrlParams } from '@utils/create-url-params';
-import { HttpRequester } from '@utils/http-requester';
 
 import { GetHistoricalChartDto } from './dtos/get-historical-chart.dto';
 import { Endpoints } from './enums/endpoints.enum';
@@ -10,10 +9,13 @@ import { RouteParam } from './enums/route-param.enum';
 import { FailedResponse } from './responses/failed.response';
 import { GSFResponse } from './responses/generic-success-failed.response';
 import { HistoricalChartRes } from './responses/historical-chart.response';
+import { HttpService } from '../http.service';
 
 @Injectable()
 export class OsmosisService {
   private BASE_URL = config.osmosis.url;
+
+  constructor(private readonly httpService: HttpService) {}
 
   private constructUrl(endpoint: string, params?: string): string {
     return `${this.BASE_URL}/${endpoint}${params ? `?${params}` : ''}`;
@@ -28,7 +30,7 @@ export class OsmosisService {
     );
 
     return this.errorHandleWrapper(
-      HttpRequester.get.bind(
+      this.httpService.get.bind(
         null,
         this.constructUrl(
           endpoint,

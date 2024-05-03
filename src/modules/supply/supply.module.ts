@@ -5,6 +5,7 @@ import { SupplyController } from "./supply.controller";
 import { PrismaService } from "@core/lib/prisma.service";
 import { SupplyJobs } from "./services/supply.jobs";
 import { SupplyCache } from "./services/supply.cache";
+import { HttpService } from "@core/lib/http.service";
 
 @Module({
     providers: [
@@ -13,6 +14,7 @@ import { SupplyCache } from "./services/supply.cache";
         PrismaService,
         SupplyJobs,
         SupplyCache,
+        HttpService,
     ],
     controllers: [SupplyController],
 })
