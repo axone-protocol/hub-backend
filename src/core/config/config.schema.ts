@@ -9,4 +9,6 @@ export const ConfigSchema = Joi.object({
   DATABASE_URL: Joi.string().required(),
   OKP4_BASE_URL: Joi.string().required(),
   TOKEN_DENOM: Joi.string().required(),
+  REDIS_HOST: Joi.string().required(),
+  REDIS_PORT: Joi.string().required(),
 }).required();

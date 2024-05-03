@@ -1,8 +1,10 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
-import { DBOrder } from '@core/enums/db-order.enum';
 import { DBTimeInterval } from '@core/enums/db-time-interval.enum';
 import { PrismaService } from '@core/lib/prisma.service';
+import { DBOrder } from '@core/enums/db-order.enum';
 
 import { HistoricalPrice } from '../dtos/historical-price.dto';
 import { TimeBucketDto } from '../dtos/time-bucket.dto';
@@ -10,60 +12,20 @@ import { PriceRange } from '../enums/price-range.enum';
 
 @Injectable()
 export class PriceCache implements OnModuleInit {
-  private all: HistoricalPrice[] = [];
-  private day: HistoricalPrice[] = [];
-  private week: HistoricalPrice[] = [];
-  private month: HistoricalPrice[] = [];
-  private threeMonth: HistoricalPrice[] = [];
-  private year: HistoricalPrice[] = [];
+  private redisPricePrefix = 'price';
 
   constructor(
-    private readonly prismaService: PrismaService
+    private readonly prismaService: PrismaService,
+    @Inject(CACHE_MANAGER) private cacheService: Cache,
   ) { }
 
   async onModuleInit() {
     await this.init();
   }
 
-  getCacheByRange(range: PriceRange): HistoricalPrice[] {
-    switch (range) {
-      case PriceRange.ALL:
-        return this.all;
-      case PriceRange.DAY:
-        return this.day;
-      case PriceRange.WEEK:
-        return this.week;
-      case PriceRange.MONTH:
-        return this.month;
-      case PriceRange.THREE_MONTH:
-        return this.threeMonth;
-      case PriceRange.YEAR:
-        return this.year;
-      default:
-        console.log('Forgot to add new case');
-        throw new Error();
-    }
-  }
-
-  async updateLastCache() {
-    this.all[this.all.length - 1] = (
-      await this.timeBucket(DBTimeInterval.MONTH, DBOrder.DESC, 1)
-    )[0];
-    this.day[this.day.length - 1] = (
-      await this.timeBucket(DBTimeInterval.TWO_HOUR, DBOrder.DESC, 1)
-    )[0];
-    this.week[this.week.length - 1] = (
-      await this.timeBucket(DBTimeInterval.SIX_HOUR, DBOrder.DESC, 1)
-    )[0];
-    this.month[this.month.length - 1] = (
-      await this.timeBucket(DBTimeInterval.DAY, DBOrder.DESC, 1)
-    )[0];
-    this.threeMonth[this.threeMonth.length - 1] = (
-      await this.timeBucket(DBTimeInterval.THREE_DAY, DBOrder.DESC, 1)
-    )[0];
-    this.year[this.year.length - 1] = (
-      await this.timeBucket(DBTimeInterval.MONTH, DBOrder.DESC, 1)
-    )[0];
+  async getCacheByRange(range: PriceRange): Promise<HistoricalPrice[]> {
+    const serializedCache = await this.cacheService.get(this.createRedisKey(range));
+    return JSON.parse(serializedCache as string);
   }
 
   private async timeBucket(
@@ -91,31 +53,33 @@ export class PriceCache implements OnModuleInit {
   //functions to refresh each cache
 
   async initAllCache() {
-    this.all = await this.timeBucket(DBTimeInterval.MONTH, DBOrder.ASC);
+    const allBucket = await this.timeBucket(DBTimeInterval.MONTH, DBOrder.ASC);
+    this.cacheService.set(this.createRedisKey(PriceRange.ALL), JSON.stringify(allBucket));
   }
 
   async initDayCache() {
-    this.day = await this.timeBucket(DBTimeInterval.TWO_HOUR, DBOrder.ASC, 12);
+    const dayBucket = await this.timeBucket(DBTimeInterval.TWO_HOUR, DBOrder.ASC, 12);
+    this.cacheService.set(this.createRedisKey(PriceRange.DAY), JSON.stringify(dayBucket));
   }
 
   async initWeekCache() {
-    this.week = await this.timeBucket(DBTimeInterval.SIX_HOUR, DBOrder.ASC, 28);
+    const weekBucket = await this.timeBucket(DBTimeInterval.SIX_HOUR, DBOrder.ASC, 28);
+    this.cacheService.set(this.createRedisKey(PriceRange.WEEK), JSON.stringify(weekBucket));
   }
 
   async initMonthCache() {
-    this.month = await this.timeBucket(DBTimeInterval.DAY, DBOrder.ASC, 30);
+    const monthBucket = await this.timeBucket(DBTimeInterval.DAY, DBOrder.ASC, 30);
+    this.cacheService.set(this.createRedisKey(PriceRange.MONTH), JSON.stringify(monthBucket));
   }
 
   async initThreeMonthCache() {
-    this.threeMonth = await this.timeBucket(
-      DBTimeInterval.THREE_DAY,
-      DBOrder.ASC,
-      30,
-    );
+    const threeMonthBucket = await this.timeBucket(DBTimeInterval.THREE_DAY, DBOrder.ASC, 30);
+    this.cacheService.set(this.createRedisKey(PriceRange.THREE_MONTH), JSON.stringify(threeMonthBucket));
   }
 
   async initYearCache() {
-    this.year = await this.timeBucket(DBTimeInterval.MONTH, DBOrder.DESC, 12);
+    const yearBucket = await this.timeBucket(DBTimeInterval.MONTH, DBOrder.DESC, 12);
+    this.cacheService.set(this.createRedisKey(PriceRange.YEAR), JSON.stringify(yearBucket));
   }
 
   async init() {
@@ -127,5 +91,9 @@ export class PriceCache implements OnModuleInit {
       this.initThreeMonthCache(),
       this.initYearCache(),
     ]);
+  }
+
+  private createRedisKey(range: PriceRange) {
+    return `${this.redisPricePrefix}_${range}`;
   }
 }
