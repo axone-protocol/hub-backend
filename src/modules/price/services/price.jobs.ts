@@ -14,7 +14,7 @@ export class PriceJobs {
   @Cron('*/5 * * * *')
   async fetchNewPrice() {
     await this.service.updateHistoryPrice();
-    await this.cache.updateLastCache();
+    await this.cache.init();
   }
 
   @Cron('* */2 * * *')

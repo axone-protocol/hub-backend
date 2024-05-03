@@ -2,6 +2,7 @@ export interface ConfigDto {
   app: AppConfig;
   osmosis: OsmosisConfig;
   okp4: Okp4Config;
+  redis: RedisConfig;
 }
 
 export interface AppConfig {
@@ -18,4 +19,9 @@ export interface OsmosisConfig {
 
 export interface Okp4Config {
   url: string;
+}
+
+export interface RedisConfig {
+  host: string;
+  port: string;
 }

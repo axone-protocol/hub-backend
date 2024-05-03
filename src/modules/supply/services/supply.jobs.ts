@@ -13,7 +13,7 @@ export class SupplyJobs {
     @Cron('* * * * *')
     async fetchNewPrice() {
       await this.service.fetchAndSaveCurrentSupply();
-      await this.cache.updateLastCache();
+      await this.cache.init();
     }
   
     @Cron('* */2 * * *')
