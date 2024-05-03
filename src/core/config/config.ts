@@ -6,8 +6,12 @@ export const config: ConfigDto = {
     host: process.env.HOST!,
     port: process.env.PORT!,
     token: process.env.TOKEN_NAME!,
+    tokenDenom: process.env.TOKEN_DENOM!,
   },
   osmosis: {
     url: process.env.OSMOSIS_BASE_URL!,
+  },
+  okp4: {
+    url: process.env.OKP4_BASE_URL!,
   },
 };

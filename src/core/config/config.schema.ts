@@ -7,4 +7,6 @@ export const ConfigSchema = Joi.object({
   TOKEN_NAME: Joi.string().required(),
   OSMOSIS_BASE_URL: Joi.string().required(),
   DATABASE_URL: Joi.string().required(),
+  OKP4_BASE_URL: Joi.string().required(),
+  TOKEN_DENOM: Joi.string().required(),
 }).required();

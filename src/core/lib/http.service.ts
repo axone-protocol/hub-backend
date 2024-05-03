@@ -1,6 +1,9 @@
-/* eslint-disable @typescript-eslint/no-namespace */
-export namespace HttpRequester {
-  export async function get<T>(url: string, headers?: HeadersInit): Promise<T> {
+import { Injectable } from "@nestjs/common";
+
+
+@Injectable()
+export class HttpService {
+  async get<T>(url: string, headers?: HeadersInit): Promise<T> {
     const res = await fetch(url, {
       method: 'get',
       headers,
@@ -9,7 +12,7 @@ export namespace HttpRequester {
     return res.json();
   }
 
-  export async function post<T>(
+  async post<T>(
     url: string,
     body: BodyInit,
     headers?: HeadersInit,

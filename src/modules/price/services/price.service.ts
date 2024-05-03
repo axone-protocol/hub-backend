@@ -7,7 +7,7 @@ import { HistoricalChartRes } from '@core/lib/osmosis/responses/historical-chart
 import { PrismaService } from '@core/lib/prisma.service';
 
 @Injectable()
-export class HistoricalPriceService {
+export class PriceService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly osmosisService: OsmosisService,
