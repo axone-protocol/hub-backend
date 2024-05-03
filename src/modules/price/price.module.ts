@@ -7,6 +7,7 @@ import { PriceController } from './price.controller';
 import { PriceCache } from './services/price.cache';
 import { PriceJobs } from './services/price.jobs';
 import { PriceService } from './services/price.service';
+import { HttpService } from '@core/lib/http.service';
 
 @Module({
   providers: [
@@ -15,6 +16,7 @@ import { PriceService } from './services/price.service';
     PriceService,
     PrismaService,
     OsmosisService,
+    HttpService,
   ],
   controllers: [PriceController],
 })

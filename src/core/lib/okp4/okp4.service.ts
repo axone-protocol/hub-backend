@@ -3,13 +3,16 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import { SupplyByDenomResponse } from "./responses/supply-by-denom.response";
 import { GSFResponse } from "./responses/generic-success-failed.response";
 import { FailedResponse } from "./responses/failed.response";
-import { HttpRequester } from "@utils/http-requester";
 import { Endpoints } from "./enums/endpoints.enum";
 import { createUrlParams } from "@utils/create-url-params";
+import { HttpService } from "../http.service";
 
 @Injectable()
 export class Okp4Service {
-    private BASE_URL = config.okp4.url;
+  private BASE_URL = config.okp4.url;
+  
+  constructor(private readonly httpService: HttpService) {}
+
 
     private constructUrl(endpoint: string, params?: string): string {
         return `${this.BASE_URL}/${endpoint}${params ? `?${params}` : ''}`;
@@ -17,7 +20,7 @@ export class Okp4Service {
 
     async getSupplyByDenom(denom: string): Promise<SupplyByDenomResponse> {
         return this.errorHandleWrapper(
-            HttpRequester.get.bind(
+            this.httpService.get.bind(
                 null,
                 this.constructUrl(
                   Endpoints.SUPPLY_BY_DENOM,
