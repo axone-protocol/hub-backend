@@ -13,14 +13,14 @@ export class StackingService {
     async getMyStacking(address: string) {
         const cache = await this.cache.getUserStacking(address);
         if (cache === null) {
-            const amount = await this.getStackedAmountByAddres(address);
+            const amount = await this.getStackedAmountByAddress(address);
             await this.cache.cacheUserStacking(address, amount);
             return amount;
         }
         return cache;
     }
 
-    async getStackedAmountByAddres(address: string) {
+    async getStackedAmountByAddress(address: string) {
         const res = await this.okp4Service.getDelegations(address);
         return res.delegation_responses.reduce((acc, val) => acc + +val.balance.amount, 0);
     }
