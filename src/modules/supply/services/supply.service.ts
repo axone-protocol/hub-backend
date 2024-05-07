@@ -7,6 +7,7 @@ import { Okp4Service } from "@core/lib/okp4/okp4.service";
 import { PrismaService } from "@core/lib/prisma.service";
 
 import { CurrentSupplyDto } from "../dtos/current-supply.dto";
+import { ChangeSupplyRange } from "../enums/change-supply-range.enum";
 
 @Injectable()
 export class SupplyService {
@@ -39,16 +40,16 @@ export class SupplyService {
         }
     }
 
-    async getCurrentSupply() {
+    async getSupplyByOrder(order = DBOrder.DESC) {
         return this.prismaService.historicalSupply.findFirst({
             orderBy: {
-              time: DBOrder.DESC,
+              time: order,
             },
         });
     }
 
     private async calculateSupplyChange(newSupply: string) {
-        const currentSupply = await this.getCurrentSupply();
+        const currentSupply = await this.getSupplyByOrder();
         let change = 0;
 
         if (currentSupply && newSupply) {
@@ -60,5 +61,44 @@ export class SupplyService {
         }
         
         return change;
+    }
+
+    async getSupplyChange(range: ChangeSupplyRange) {
+        const previousSupply = await this.getSupplyForChangeByRange(range);
+        const currentSupply = await this.getSupplyByOrder();
+        if (previousSupply && currentSupply) return Big(currentSupply.supply).minus(previousSupply.supply);
+    }
+
+    private async getSupplyForChangeByRange(range: ChangeSupplyRange) {
+        const dateByRange = this.createDateForChangeSupply(range);
+        const supply = await this.prismaService.historicalSupply.findFirst({
+            where: {
+                time: {
+                    lte: dateByRange,
+                }
+            },
+            orderBy: {
+                time: DBOrder.DESC
+            },
+        });
+
+        if (!supply) {
+            return this.getSupplyByOrder(DBOrder.ASC);
+        }
+
+        return supply;
+    }
+
+    private createDateForChangeSupply(range: ChangeSupplyRange): Date {
+        let date = new Date();
+        switch (range) {
+            case ChangeSupplyRange.FIVE_MIN: date = new Date(date.setMinutes(date.getMinutes() - 5)); break;
+            case ChangeSupplyRange.HOUR: date = new Date(date.setHours(date.getHours() - 1)); break;
+            case ChangeSupplyRange.DAY: date = new Date(date.setDate(date.getDate() - 1)); break;
+            case ChangeSupplyRange.WEEK: date = new Date(date.setDate(date.getDate() - 7)); break;
+            case ChangeSupplyRange.MONTH: date = new Date(date.setMonth(date.getMonth() - 1)); break;
+        }
+
+        return date;
     }
 }
