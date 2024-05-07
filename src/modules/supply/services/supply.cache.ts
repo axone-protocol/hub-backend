@@ -6,7 +6,7 @@ import { DBOrder } from "@core/enums/db-order.enum";
 import { DBTimeInterval } from "@core/enums/db-time-interval.enum";
 import { PrismaService } from "@core/lib/prisma.service";
 
-import { SupplyRange } from "../enums/supply-range.enum";
+import { HistoricalSupplyRange } from "../enums/historical-supply-range.enum";
 import { TimeBucketDto } from "../dtos/time-bucket.dto";
 import { ChangeIntervalDto } from "../dtos/change-interval.dto";
 
@@ -23,7 +23,7 @@ export class SupplyCache {
     await this.init();
   }
   
-  async getCacheByRange(range: SupplyRange): Promise<ChangeIntervalDto[]> {
+  async getCacheByRange(range: HistoricalSupplyRange): Promise<ChangeIntervalDto[]> {
     const serializedCache = await this.cacheService.get(this.createRedisKey(range));
     return JSON.parse(serializedCache as string);
   }
@@ -54,22 +54,22 @@ export class SupplyCache {
 
   async initAllCache() {
     const allBucket = await this.timeBucket(DBTimeInterval.MONTH, DBOrder.ASC);
-    this.cacheService.set(this.createRedisKey(SupplyRange.ALL), JSON.stringify(allBucket));
+    this.cacheService.set(this.createRedisKey(HistoricalSupplyRange.ALL), JSON.stringify(allBucket));
   }
 
   async initDayCache() {
     const dayBucket = await this.timeBucket(DBTimeInterval.TWO_HOUR, DBOrder.ASC, 12);
-    this.cacheService.set(this.createRedisKey(SupplyRange.DAY), JSON.stringify(dayBucket));
+    this.cacheService.set(this.createRedisKey(HistoricalSupplyRange.DAY), JSON.stringify(dayBucket));
   }
 
   async initWeekCache() {
     const weekBucket = await this.timeBucket(DBTimeInterval.SIX_HOUR, DBOrder.ASC, 28);
-    this.cacheService.set(this.createRedisKey(SupplyRange.WEEK), JSON.stringify(weekBucket));
+    this.cacheService.set(this.createRedisKey(HistoricalSupplyRange.WEEK), JSON.stringify(weekBucket));
   }
 
   async initMonthCache() {
     const monthBucket = await this.timeBucket(DBTimeInterval.DAY, DBOrder.ASC, 30);
-    this.cacheService.set(this.createRedisKey(SupplyRange.MONTH), JSON.stringify(monthBucket));
+    this.cacheService.set(this.createRedisKey(HistoricalSupplyRange.MONTH), JSON.stringify(monthBucket));
   }
 
   async init() {
@@ -81,7 +81,7 @@ export class SupplyCache {
     ]);
   }
 
-  private createRedisKey(range: SupplyRange) {
+  private createRedisKey(range: HistoricalSupplyRange) {
     return `${this.redisSupplyPrefix}_${range}`;
   }
 }
