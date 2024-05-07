@@ -6,6 +6,8 @@ import { FailedResponse } from "./responses/failed.response";
 import { Endpoints } from "./enums/endpoints.enum";
 import { createUrlParams } from "@utils/create-url-params";
 import { HttpService } from "../http.service";
+import { WithPaginationResponse } from "./responses/with-pagination.response";
+import { GetDelegationsResponse } from "./responses/get-delegations.response";
 
 @Injectable()
 export class Okp4Service {
@@ -28,6 +30,15 @@ export class Okp4Service {
                 ),
               ),
         );
+    }
+  
+    async getDelegations(addr: string): Promise<WithPaginationResponse<GetDelegationsResponse>> {
+      return this.errorHandleWrapper(
+        this.httpService.get.bind(
+          null,
+          this.constructUrl(`${Endpoints.STACKING_DELEGATIONS}/${addr}`,)
+          ),
+    );
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -3,6 +3,7 @@ export interface ConfigDto {
   osmosis: OsmosisConfig;
   okp4: Okp4Config;
   redis: RedisConfig;
+  cache: CacheConfig;
 }
 
 export interface AppConfig {
@@ -24,4 +25,8 @@ export interface Okp4Config {
 export interface RedisConfig {
   host: string;
   port: string;
+}
+
+export interface CacheConfig {
+  userStackingTtl: string;
 }
