@@ -5,6 +5,7 @@ import * as redisStore from 'cache-manager-redis-store';
 
 import { PriceModule } from './price/price.module';
 import { SupplyModule } from './supply/supply.module';
+import { StackingModule } from './stacking/stacking.module';
 import { config } from '@core/config/config';
 
 @Module({
@@ -18,6 +19,7 @@ import { config } from '@core/config/config';
     }),
     PriceModule,
     SupplyModule,
+    StackingModule,
   ],
 })
 export class AppModule {}
