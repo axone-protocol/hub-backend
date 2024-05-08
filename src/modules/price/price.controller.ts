@@ -2,9 +2,9 @@ import { Controller, Get, Query } from '@nestjs/common';
 
 import { Routes } from '@core/enums/routes.enum';
 import { SchemaValidatePipe } from '@core/pipes/schema-validate.pipe';
+import { Range } from '@core/enums/range.enum';
 
 import { QueryParam } from './enums/query-param.enum';
-import { PriceRange } from './enums/price-range.enum';
 import { RangeSchema } from './schemas/range.schema';
 import { PriceCache } from './services/price.cache';
 import { PriceEndpoints } from './enums/price-endpoints.enum';
@@ -16,7 +16,7 @@ export class PriceController {
   @Get(PriceEndpoints.HISTORICAL)
   async getHistoricalPrice(
     @Query(QueryParam.RANGE, new SchemaValidatePipe(RangeSchema))
-    range: PriceRange,
+    range: Range,
   ) {
     return this.cache.getCacheByRange(range);
   }

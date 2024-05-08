@@ -1,6 +1,6 @@
+import { Range } from '@core/enums/range.enum';
 import * as Joi from 'joi';
-import { ChangeSupplyRange } from '../enums/change-supply-range.enum';
 
 export const ChangeRangeSchema = Joi.string()
-  .valid(...Object.values(ChangeSupplyRange))
+  .valid(Range.FIVE_MIN, Range.HOUR, Range.DAY, Range.WEEK, Range.MONTH)
   .required();
