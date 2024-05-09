@@ -15,6 +15,7 @@ import { config } from '@core/config/config';
       logger: new NestLoggerImpl(),
     });
 
+  app.enableCors();
   await app.listen(config.app.port, config.app.host);
 
   await showAvailableRoutes(app);

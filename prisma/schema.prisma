@@ -19,3 +19,10 @@ model HistoricalSupply {
   change Float
   @@map("historical_supply")
 }
+
+model HistoricalMcap {
+  time DateTime @id @unique
+  mcap Float
+  change Float
+  @@map("historical_mcap")
+}

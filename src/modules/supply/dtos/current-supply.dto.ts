@@ -1,5 +1,5 @@
 export interface CurrentSupplyDto {
-    time: Date;
-    supply: string;
-    change: number;
+  time: Date;
+  supply: string;
+  change: number;
 }

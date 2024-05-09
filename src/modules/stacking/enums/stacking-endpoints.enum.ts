@@ -1,3 +1,3 @@
 export enum StackingEndpoints {
-    ME = '/me',
+  ME = '/me',
 }

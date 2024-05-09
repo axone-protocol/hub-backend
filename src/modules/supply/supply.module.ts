@@ -8,14 +8,14 @@ import { SupplyCache } from "./services/supply.cache";
 import { HttpService } from "@core/lib/http.service";
 
 @Module({
-    providers: [
-        Okp4Service,
-        SupplyService,
-        PrismaService,
-        SupplyJobs,
-        SupplyCache,
-        HttpService,
-    ],
-    controllers: [SupplyController],
+  providers: [
+    Okp4Service,
+    SupplyService,
+    PrismaService,
+    SupplyJobs,
+    SupplyCache,
+    HttpService,
+  ],
+  controllers: [SupplyController],
 })
 export class SupplyModule {}

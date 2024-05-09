@@ -1,5 +1,5 @@
 export enum SupplyEndpoints {
-    HISTORICAL = '/historical',
-    CHANGE = '/change',
-    GROWTH = '/growth',
+  HISTORICAL = '/historical',
+  CHANGE = '/change',
+  GROWTH = '/growth',
 }
