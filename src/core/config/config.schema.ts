@@ -11,5 +11,5 @@ export const ConfigSchema = Joi.object({
   TOKEN_DENOM: Joi.string().required(),
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.string().required(),
-  USER_STACKING_TTL: Joi.number().required(),
+  MY_STAKING_OVERVIEW: Joi.number().required(),
 }).required();
