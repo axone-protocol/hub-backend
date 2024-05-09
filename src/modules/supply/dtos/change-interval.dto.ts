@@ -1,4 +1,4 @@
 export interface ChangeIntervalDto {
-    change: number;
-    time: Date;
+  change: number;
+  time: Date;
 }

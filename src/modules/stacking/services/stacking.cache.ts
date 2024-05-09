@@ -5,22 +5,22 @@ import { Cache } from 'cache-manager';
 
 @Injectable()
 export class StackingCache {
-    private redisStackingPrefix = 'stacking';
+  private redisStackingPrefix = 'stacking';
 
-    constructor(
-        @Inject(CACHE_MANAGER) private cacheService: Cache,
-    ) { }
+  constructor(
+    @Inject(CACHE_MANAGER) private cacheService: Cache,
+  ) { }
     
-    async cacheUserStacking(address: string, info: unknown) {
-        const serialized = JSON.stringify(info);
-        await this.cacheService.set(this.createRedisKey(address), serialized, +config.cache.userStackingTtl);
-    }
+  async cacheUserStacking(address: string, info: unknown) {
+    const serialized = JSON.stringify(info);
+    await this.cacheService.set(this.createRedisKey(address), serialized, config.cache.userStackingTtl);
+  }
 
-    async getUserStacking(address: string) {
-        return this.cacheService.get(this.createRedisKey(address));
-    }
+  async getUserStacking(address: string) {
+    return this.cacheService.get(this.createRedisKey(address));
+  }
 
-    private createRedisKey(address: string) {
-        return `${this.redisStackingPrefix}_${address}`;
-    }
+  private createRedisKey(address: string) {
+    return `${this.redisStackingPrefix}_${address}`;
+  }
 }

@@ -28,5 +28,5 @@ export interface RedisConfig {
 }
 
 export interface CacheConfig {
-  userStackingTtl: string;
+  userStackingTtl: number;
 }
