@@ -12,37 +12,37 @@ import { GrowthRangeSchema } from "./schemas/growth-range.schema";
 
 @Controller(Routes.SUPPLY)
 export class SupplyController {
-    constructor(
-        private readonly cache: SupplyCache,
-        private readonly service: SupplyService,
-    ) {}
+  constructor(
+    private readonly cache: SupplyCache,
+    private readonly service: SupplyService,
+  ) {}
     
-    @Get(SupplyEndpoints.HISTORICAL)
-    async getHistoricalSupply(
+  @Get(SupplyEndpoints.HISTORICAL)
+  async getHistoricalSupply(
         @Query(QueryParam.RANGE, new SchemaValidatePipe(HistoricalRangeSchema))
-        range: Range,
-    ) {
-        return this.cache.getCacheByRange(range);
-    }
+          range: Range,
+  ) {
+    return this.cache.getCacheByRange(range);
+  }
 
-    @Get()
-    async getCurrentSupply() {
-        return this.service.getSupplyByOrder();
-    }
+  @Get()
+  async getCurrentSupply() {
+    return this.service.getSupplyByOrder();
+  }
 
-    @Get(SupplyEndpoints.CHANGE)
-    async getSupplyChange(
-        @Query(QueryParam.RANGE, new SchemaValidatePipe(ChangeRangeSchema))
-        range: Range,
-    ) {
-        return this.service.getSupplyChange(range);
-    }
+  @Get(SupplyEndpoints.CHANGE)
+  async getSupplyChange(
+    @Query(QueryParam.RANGE, new SchemaValidatePipe(ChangeRangeSchema))
+      range: Range,
+  ) {
+    return this.service.getSupplyChange(range);
+  }
 
-    @Get(SupplyEndpoints.GROWTH)
-    async getSupplyGrowth(
-        @Query(QueryParam.RANGE, new SchemaValidatePipe(GrowthRangeSchema))
-        range: Range,
-    ) {
-        return this.service.getSupplyGrowth(range);
-    }
+  @Get(SupplyEndpoints.GROWTH)
+  async getSupplyGrowth(
+    @Query(QueryParam.RANGE, new SchemaValidatePipe(GrowthRangeSchema))
+      range: Range,
+  ) {
+    return this.service.getSupplyGrowth(range);
+  }
 }

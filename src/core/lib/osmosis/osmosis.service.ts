@@ -10,6 +10,8 @@ import { FailedResponse } from './responses/failed.response';
 import { GSFResponse } from './responses/generic-success-failed.response';
 import { HistoricalChartRes } from './responses/historical-chart.response';
 import { HttpService } from '../http.service';
+import { TokenInfoResponse } from './responses/token-info.response';
+import { McapResponse } from './responses/mcap.response';
 
 @Injectable()
 export class OsmosisService {
@@ -21,6 +23,15 @@ export class OsmosisService {
     return `${this.BASE_URL}/${endpoint}${params ? `?${params}` : ''}`;
   }
 
+  private getWithErrorHandling<T>(url: string): Promise<T> {
+    return this.errorHandleWrapper(
+      this.httpService.get.bind(
+        null,
+        url,
+      ),
+    );
+  }
+
   async getHistoricalChart(
     payload: GetHistoricalChartDto,
   ): Promise<HistoricalChartRes> {
@@ -29,15 +40,25 @@ export class OsmosisService {
       payload.symbol,
     );
 
-    return this.errorHandleWrapper(
-      this.httpService.get.bind(
-        null,
-        this.constructUrl(
-          endpoint,
-          createUrlParams({ tf: payload.range.toString() }),
-        ),
+    return this.getWithErrorHandling(
+      this.constructUrl(
+        endpoint,
+        createUrlParams({ tf: payload.range.toString() }),
       ),
     );
+  }
+
+  async getTokenInfo(symbol: string): Promise<TokenInfoResponse[]> {
+    const endpoint = Endpoints.TOKEN_BY_SYMBOL.replace(
+      RouteParam.SYMBOL,
+      symbol,
+    );
+
+    return this.getWithErrorHandling(this.constructUrl(endpoint));
+  }
+
+  async getMcap(): Promise<McapResponse[]> {
+    return this.getWithErrorHandling(this.constructUrl(Endpoints.MARKET_CAP));
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

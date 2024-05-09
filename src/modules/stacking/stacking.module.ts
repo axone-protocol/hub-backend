@@ -6,15 +6,15 @@ import { HttpService } from "@core/lib/http.service";
 import { StackingCache } from "./services/stacking.cache";
 
 @Module({
-    imports: [],
-    providers: [
-        Okp4Service,
-        StackingService,
-        StackingCache,
-        HttpService,
-    ],
-    controllers: [
-        StackingController,
-    ],
+  imports: [],
+  providers: [
+    Okp4Service,
+    StackingService,
+    StackingCache,
+    HttpService,
+  ],
+  controllers: [
+    StackingController,
+  ],
 })
 export class StackingModule {}

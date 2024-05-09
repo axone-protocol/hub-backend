@@ -1,3 +1,3 @@
 export enum QueryParam {
-  RANGE = 'range',
+    RANGE = 'range',
 }
