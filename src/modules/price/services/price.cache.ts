@@ -8,7 +8,7 @@ import { DBOrder } from '@core/enums/db-order.enum';
 
 import { HistoricalPrice } from '../dtos/historical-price.dto';
 import { TimeBucketDto } from '../dtos/time-bucket.dto';
-import { PriceRange } from '../enums/price-range.enum';
+import { Range } from '@core/enums/range.enum';
 
 @Injectable()
 export class PriceCache implements OnModuleInit {
@@ -23,7 +23,7 @@ export class PriceCache implements OnModuleInit {
     await this.init();
   }
 
-  async getCacheByRange(range: PriceRange): Promise<HistoricalPrice[]> {
+  async getCacheByRange(range: Range): Promise<HistoricalPrice[]> {
     const serializedCache = await this.cacheService.get(this.createRedisKey(range));
     return JSON.parse(serializedCache as string);
   }
@@ -54,32 +54,32 @@ export class PriceCache implements OnModuleInit {
 
   async initAllCache() {
     const allBucket = await this.timeBucket(DBTimeInterval.MONTH, DBOrder.ASC);
-    this.cacheService.set(this.createRedisKey(PriceRange.ALL), JSON.stringify(allBucket));
+    this.cacheService.set(this.createRedisKey(Range.ALL), JSON.stringify(allBucket));
   }
 
   async initDayCache() {
     const dayBucket = await this.timeBucket(DBTimeInterval.TWO_HOUR, DBOrder.ASC, 12);
-    this.cacheService.set(this.createRedisKey(PriceRange.DAY), JSON.stringify(dayBucket));
+    this.cacheService.set(this.createRedisKey(Range.DAY), JSON.stringify(dayBucket));
   }
 
   async initWeekCache() {
     const weekBucket = await this.timeBucket(DBTimeInterval.SIX_HOUR, DBOrder.ASC, 28);
-    this.cacheService.set(this.createRedisKey(PriceRange.WEEK), JSON.stringify(weekBucket));
+    this.cacheService.set(this.createRedisKey(Range.WEEK), JSON.stringify(weekBucket));
   }
 
   async initMonthCache() {
     const monthBucket = await this.timeBucket(DBTimeInterval.DAY, DBOrder.ASC, 30);
-    this.cacheService.set(this.createRedisKey(PriceRange.MONTH), JSON.stringify(monthBucket));
+    this.cacheService.set(this.createRedisKey(Range.MONTH), JSON.stringify(monthBucket));
   }
 
   async initThreeMonthCache() {
     const threeMonthBucket = await this.timeBucket(DBTimeInterval.THREE_DAY, DBOrder.ASC, 30);
-    this.cacheService.set(this.createRedisKey(PriceRange.THREE_MONTH), JSON.stringify(threeMonthBucket));
+    this.cacheService.set(this.createRedisKey(Range.THREE_MONTH), JSON.stringify(threeMonthBucket));
   }
 
   async initYearCache() {
     const yearBucket = await this.timeBucket(DBTimeInterval.MONTH, DBOrder.DESC, 12);
-    this.cacheService.set(this.createRedisKey(PriceRange.YEAR), JSON.stringify(yearBucket));
+    this.cacheService.set(this.createRedisKey(Range.YEAR), JSON.stringify(yearBucket));
   }
 
   async init() {
@@ -93,7 +93,7 @@ export class PriceCache implements OnModuleInit {
     ]);
   }
 
-  private createRedisKey(range: PriceRange) {
+  private createRedisKey(range: Range) {
     return `${this.redisPricePrefix}_${range}`;
   }
 }

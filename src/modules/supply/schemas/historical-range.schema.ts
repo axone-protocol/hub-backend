@@ -1,6 +1,6 @@
+import { Range } from '@core/enums/range.enum';
 import * as Joi from 'joi';
-import { HistoricalSupplyRange } from '../enums/historical-supply-range.enum';
 
 export const HistoricalRangeSchema = Joi.string()
-  .valid(...Object.values(HistoricalSupplyRange))
+  .valid(Range.ALL, Range.DAY, Range.WEEK, Range.MONTH)
   .required();

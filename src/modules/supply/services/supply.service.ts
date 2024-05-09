@@ -7,7 +7,7 @@ import { Okp4Service } from "@core/lib/okp4/okp4.service";
 import { PrismaService } from "@core/lib/prisma.service";
 
 import { CurrentSupplyDto } from "../dtos/current-supply.dto";
-import { ChangeSupplyRange } from "../enums/change-supply-range.enum";
+import { Range } from "@core/enums/range.enum";
 
 @Injectable()
 export class SupplyService {
@@ -63,14 +63,14 @@ export class SupplyService {
         return change;
     }
 
-    async getSupplyChange(range: ChangeSupplyRange) {
-        const previousSupply = await this.getSupplyForChangeByRange(range);
+    async getSupplyChange(range: Range) {
+        const previousSupply = await this.getPastSupplyByRange(range);
         const currentSupply = await this.getSupplyByOrder();
         if (previousSupply && currentSupply) return Big(currentSupply.supply).minus(previousSupply.supply);
     }
 
-    private async getSupplyForChangeByRange(range: ChangeSupplyRange) {
-        const dateByRange = this.createDateForChangeSupply(range);
+    private async getPastSupplyByRange(range: Range) {
+        const dateByRange = this.calculatePastDateByRange(range);
         const supply = await this.prismaService.historicalSupply.findFirst({
             where: {
                 time: {
@@ -89,16 +89,36 @@ export class SupplyService {
         return supply;
     }
 
-    private createDateForChangeSupply(range: ChangeSupplyRange): Date {
+    private calculatePastDateByRange(range: Range): Date {
         let date = new Date();
         switch (range) {
-            case ChangeSupplyRange.FIVE_MIN: date = new Date(date.setMinutes(date.getMinutes() - 5)); break;
-            case ChangeSupplyRange.HOUR: date = new Date(date.setHours(date.getHours() - 1)); break;
-            case ChangeSupplyRange.DAY: date = new Date(date.setDate(date.getDate() - 1)); break;
-            case ChangeSupplyRange.WEEK: date = new Date(date.setDate(date.getDate() - 7)); break;
-            case ChangeSupplyRange.MONTH: date = new Date(date.setMonth(date.getMonth() - 1)); break;
+            case Range.FIVE_MIN: date = new Date(date.setMinutes(date.getMinutes() - 5)); break;
+            case Range.HOUR: date = new Date(date.setHours(date.getHours() - 1)); break;
+            case Range.DAY: date = new Date(date.setDate(date.getDate() - 1)); break;
+            case Range.WEEK: date = new Date(date.setDate(date.getDate() - 7)); break;
+            case Range.MONTH: date = new Date(date.setMonth(date.getMonth() - 1)); break;
         }
 
         return date;
+    }
+
+    async getSupplyGrowth(range: Range) {
+        const pastDate = this.calculatePastDateByRange(range);
+        const supplyChangeByPeriod = await this.prismaService.historicalSupply.aggregate({
+            where: {
+                time: {
+                    gte: pastDate,
+                }
+            },
+            _sum: {
+                change: true,
+            }
+        });
+
+        if (supplyChangeByPeriod._sum.change) {
+            return Big(supplyChangeByPeriod._sum.change).toFixed(2);
+        }
+
+        return 0;
     }
 }

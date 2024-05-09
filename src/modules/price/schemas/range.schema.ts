@@ -1,7 +1,7 @@
 import * as Joi from 'joi';
 
-import { PriceRange } from '../enums/price-range.enum';
+import { Range } from '@core/enums/range.enum';
 
 export const RangeSchema = Joi.string()
-  .valid(...Object.values(PriceRange))
+  .valid(Range.ALL, Range.DAY, Range.MONTH, Range.THREE_MONTH, Range.WEEK, Range.YEAR)
   .required();
