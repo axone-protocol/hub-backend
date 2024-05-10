@@ -6,6 +6,7 @@ import { Cache } from 'cache-manager';
 @Injectable()
 export class StackingCache {
   private redisStackingPrefix = 'stacking';
+  private globalOverviewPrefix = 'global_overview';
 
   constructor(
     @Inject(CACHE_MANAGER) private cacheService: Cache,
@@ -20,13 +21,28 @@ export class StackingCache {
     const serialized = await this.cacheService.get(this.createRedisKey(address));
 
     if (!serialized) {
-      return {};
+      return null;
     }
 
     return JSON.parse(serialized as string);
   }
 
-  private createRedisKey(address: string) {
-    return `${this.redisStackingPrefix}_${address}`;
+  async setGlobalStakedOverview(data: unknown) {
+    const serialized = JSON.stringify(data);
+    await this.cacheService.set(this.createRedisKey(this.globalOverviewPrefix), serialized, config.cache.globalStakingOverview);
+  }
+
+  async getGlobalStakedOverview() {
+    const serialized = await this.cacheService.get(this.createRedisKey(this.globalOverviewPrefix));
+
+    if (!serialized) {
+      return null;
+    }
+
+    return JSON.parse(serialized as string);
+  }
+
+  private createRedisKey(id: string) {
+    return `${this.redisStackingPrefix}_${id}`;
   }
 }

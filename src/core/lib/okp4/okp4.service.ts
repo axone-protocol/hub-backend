@@ -11,10 +11,12 @@ import { RouteParam } from "./enums/route-param.enum";
 import { DelegatorValidatorsResponse } from "./responses/delegators-validators.response";
 import { DelegatorsRewardsResponse } from "./responses/delegators-rewards.response";
 import { SpendableBalancesResponse } from "./responses/spendable-balances.response";
+import { SupplyResponse } from "./responses/supply.response";
 
 @Injectable()
 export class Okp4Service {
   private BASE_URL = config.okp4.url;
+  private VALIDATORS_STATUS = 'BOND_STATUS_BONDED';
   
   constructor(private readonly httpService: HttpService) {}
 
@@ -68,6 +70,21 @@ export class Okp4Service {
 
   async getSpendableBalances(addr: string): Promise<SpendableBalancesResponse> {
     return this.getWithErrorHandling(this.constructUrl(`${Endpoints.SPENDABLE_BALANCE}/${addr}`));
+  }
+
+  async getValidators(): Promise<DelegatorValidatorsResponse> {
+    const url = this.constructUrl(
+      Endpoints.VALIDATORS,
+      createUrlParams({ status: this.VALIDATORS_STATUS }),
+    );
+    return this.getWithErrorHandling(url);
+  }
+
+  async getTotalSupply(): Promise<SupplyResponse> {
+    const url = this.constructUrl(
+      Endpoints.TOTAL_SUPPLY,
+    );
+    return this.getWithErrorHandling(url);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

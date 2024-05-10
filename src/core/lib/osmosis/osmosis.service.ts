@@ -61,6 +61,12 @@ export class OsmosisService {
     return this.getWithErrorHandling(this.constructUrl(Endpoints.MARKET_CAP));
   }
 
+  async getStakingApr(): Promise<number> {
+    return this.getWithErrorHandling(
+      this.constructUrl(Endpoints.STAKING_APR),
+    )
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async errorHandleWrapper<T>(fn: any): Promise<T> {
     try {
