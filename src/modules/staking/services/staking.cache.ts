@@ -4,8 +4,8 @@ import { Inject, Injectable } from "@nestjs/common";
 import { Cache } from 'cache-manager';
 
 @Injectable()
-export class StackingCache {
-  private redisStackingPrefix = 'stacking';
+export class StakingCache {
+  private redisStakingPrefix = 'staking';
   private globalOverviewPrefix = 'global_overview';
 
   constructor(
@@ -43,6 +43,6 @@ export class StackingCache {
   }
 
   private createRedisKey(id: string) {
-    return `${this.redisStackingPrefix}_${id}`;
+    return `${this.redisStakingPrefix}_${id}`;
   }
 }

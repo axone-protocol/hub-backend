@@ -19,8 +19,8 @@ export class SupplyController {
     
   @Get(SupplyEndpoints.HISTORICAL)
   async getHistoricalSupply(
-        @Query(QueryParam.RANGE, new SchemaValidatePipe(HistoricalRangeSchema))
-          range: Range,
+    @Query(QueryParam.RANGE, new SchemaValidatePipe(HistoricalRangeSchema))
+      range: Range,
   ) {
     return this.cache.getCacheByRange(range);
   }

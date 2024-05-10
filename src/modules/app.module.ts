@@ -4,7 +4,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
 
 import { SupplyModule } from './supply/supply.module';
-import { StackingModule } from './stacking/stacking.module';
+import { StakingModule } from './staking/staking.module';
 import { config } from '@core/config/config';
 import { TokenModule } from './token/token.module';
 
@@ -19,7 +19,7 @@ import { TokenModule } from './token/token.module';
     }),
     TokenModule,
     SupplyModule,
-    StackingModule,
+    StakingModule,
   ],
 })
 export class AppModule {}

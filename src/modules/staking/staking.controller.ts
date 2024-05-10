@@ -1,18 +1,18 @@
 import { Routes } from "@core/enums/routes.enum";
 import { Controller, Get, Query } from "@nestjs/common";
-import { StackingService } from "./services/stacking.service";
-import { StackingEndpoints } from "./enums/stacking-endpoints.enum";
+import { StakingService } from "./services/staking.service";
+import { StakingEndpoints } from "./enums/staking-endpoints.enum";
 import { QueryParam } from "./enums/query-param.enum";
 import { SchemaValidatePipe } from "@core/pipes/schema-validate.pipe";
 import { AddressSchema } from "./schemas/address.schema";
 
-@Controller(Routes.STACKING)
-export class StackingController {
+@Controller(Routes.STAKING)
+export class StakingController {
   constructor(
-    private readonly service: StackingService,
+    private readonly service: StakingService,
   ) { }
     
-  @Get(StackingEndpoints.MY_OVERVIEW)
+  @Get(StakingEndpoints.MY_OVERVIEW)
   async getMyStakedOverview(
     @Query(QueryParam.ADDRESS, new SchemaValidatePipe(AddressSchema))
       address: string,
@@ -20,7 +20,7 @@ export class StackingController {
     return await this.service.getMyStakedOverview(address);
   }
 
-  @Get(StackingEndpoints.OVERVIEW)
+  @Get(StakingEndpoints.OVERVIEW)
   async getGlobalOverview() {
     return this.service.getGlobalOverview();
   }

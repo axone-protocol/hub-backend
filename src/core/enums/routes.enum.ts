@@ -1,5 +1,5 @@
 export enum Routes {
   SUPPLY = 'supply',
-  STACKING = 'stacking',
+  STAKING = 'staking',
   TOKEN = 'token',
 }
