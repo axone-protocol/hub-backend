@@ -29,4 +29,5 @@ export interface RedisConfig {
 
 export interface CacheConfig {
   myStakingOverview: number;
+  globalStakingOverview: number;
 }

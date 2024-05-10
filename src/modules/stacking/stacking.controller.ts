@@ -19,4 +19,9 @@ export class StackingController {
   ) {
     return await this.service.getMyStakedOverview(address);
   }
+
+  @Get(StackingEndpoints.OVERVIEW)
+  async getGlobalOverview() {
+    return this.service.getGlobalOverview();
+  }
 }
