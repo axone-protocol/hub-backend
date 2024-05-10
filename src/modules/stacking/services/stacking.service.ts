@@ -4,12 +4,17 @@ import { Injectable } from "@nestjs/common";
 import { StackingCache } from "./stacking.cache";
 import { config } from "@core/config/config";
 import { MyStakedOverviewDto } from "../dtos/my-staked-overview.dto";
+import { OsmosisService } from "@core/lib/osmosis/osmosis.service";
+import { Validator } from "@core/lib/okp4/responses/delegators-validators.response";
+import Big from "big.js";
+import { GlobalStakedOverviewDto } from "../dtos/global-staked-overview.dto";
 
 @Injectable()
 export class StackingService {
   constructor(
     private readonly okp4Service: Okp4Service,
     private readonly cache: StackingCache,
+    private readonly osmosisService: OsmosisService,
   ) { }
     
   async getMyStakedOverview(address: string) {
@@ -47,7 +52,7 @@ export class StackingService {
 
   private async fetchDelegatorsValidatorsAmount(address: string) {
     const res = await this.okp4Service.getDelegatorsValidators(address);
-    return res.validators.length.toString();
+    return res.pagination.total;
   }
 
   private async fetchDelegatorsRewards(address: string) {
@@ -58,5 +63,47 @@ export class StackingService {
   private async fetchAvailableBalance(address: string) {
     const res = await this.okp4Service.getSpendableBalances(address);
     return res.balances.find(({ denom }) => config.app.tokenDenom === denom)?.amount || '0';
+  }
+
+  async getGlobalOverview() {
+    const cache = await this.cache.getGlobalStakedOverview();
+
+    if (cache === null) {
+      return this.fetchAndCacheGlobalStakedOverview();
+    }
+
+    return cache;
+  }
+
+
+  private async fetchAndCacheGlobalStakedOverview(): Promise<GlobalStakedOverviewDto> {
+    const rez = await Promise.all([
+      this.okp4Service.getValidators(),
+      this.osmosisService.getStakingApr(),
+      this.fetchTotalSupply(),
+    ]);
+
+    const totalStaked = this.calculateTotalStaked(rez[0].validators);
+
+    const dto: GlobalStakedOverviewDto = {
+      totalValidators: rez[0].pagination.total,
+      apr: rez[1].toString(),
+      totalStaked,
+      bondedTokens: Big(totalStaked).div(rez[2]!.amount).toString(),
+    }
+
+    await this.cache.setGlobalStakedOverview(dto);
+
+    return dto;
+  }
+
+  private calculateTotalStaked(validators: Validator[]): string {
+    const totalStaked = validators.reduce((acc, val) => acc.add(val.delegator_shares), Big(0));
+    return totalStaked.toString();
+  }
+
+  private async fetchTotalSupply() {
+    const res = await this.okp4Service.getTotalSupply();
+    return res.supply.find(({ denom }) => denom === config.app.tokenDenom);
   }
 }
