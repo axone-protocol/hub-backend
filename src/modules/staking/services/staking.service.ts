@@ -1,7 +1,7 @@
 import { Okp4Service } from "@core/lib/okp4/okp4.service";
 import { Injectable } from "@nestjs/common";
 
-import { StackingCache } from "./stacking.cache";
+import { StakingCache } from "./staking.cache";
 import { config } from "@core/config/config";
 import { MyStakedOverviewDto } from "../dtos/my-staked-overview.dto";
 import { OsmosisService } from "@core/lib/osmosis/osmosis.service";
@@ -10,10 +10,10 @@ import Big from "big.js";
 import { GlobalStakedOverviewDto } from "../dtos/global-staked-overview.dto";
 
 @Injectable()
-export class StackingService {
+export class StakingService {
   constructor(
     private readonly okp4Service: Okp4Service,
-    private readonly cache: StackingCache,
+    private readonly cache: StakingCache,
     private readonly osmosisService: OsmosisService,
   ) { }
     
