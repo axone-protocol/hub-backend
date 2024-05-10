@@ -1,3 +1,3 @@
 export enum StackingEndpoints {
-  ME = '/me',
+  MY_OVERVIEW = '/my/overview',
 }

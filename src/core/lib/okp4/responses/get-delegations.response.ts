@@ -1,6 +1,6 @@
-export interface GetDelegationsResponse {
-    delegation_responses: DelegationItem[];
-}
+import { WithPaginationResponse } from "./with-pagination.response";
+
+export type GetDelegationsResponse = WithPaginationResponse<{ delegation_responses: DelegationItem[] }>;
 
 export interface DelegationItem {
     delegation: {

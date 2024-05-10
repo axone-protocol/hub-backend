@@ -6,8 +6,11 @@ import { FailedResponse } from "./responses/failed.response";
 import { Endpoints } from "./enums/endpoints.enum";
 import { createUrlParams } from "@utils/create-url-params";
 import { HttpService } from "../http.service";
-import { WithPaginationResponse } from "./responses/with-pagination.response";
 import { GetDelegationsResponse } from "./responses/get-delegations.response";
+import { RouteParam } from "./enums/route-param.enum";
+import { DelegatorValidatorsResponse } from "./responses/delegators-validators.response";
+import { DelegatorsRewardsResponse } from "./responses/delegators-rewards.response";
+import { SpendableBalancesResponse } from "./responses/spendable-balances.response";
 
 @Injectable()
 export class Okp4Service {
@@ -15,30 +18,56 @@ export class Okp4Service {
   
   constructor(private readonly httpService: HttpService) {}
 
-
   private constructUrl(endpoint: string, params?: string): string {
     return `${this.BASE_URL}/${endpoint}${params ? `?${params}` : ''}`;
   }
 
-  async getSupplyByDenom(denom: string): Promise<SupplyByDenomResponse> {
+  private getWithErrorHandling<T>(url: string): Promise<T> {
     return this.errorHandleWrapper(
       this.httpService.get.bind(
         null,
-        this.constructUrl(
-          Endpoints.SUPPLY_BY_DENOM,
-          createUrlParams({ denom }),
-        ),
+        url,
       ),
     );
   }
-  
-  async getDelegations(addr: string): Promise<WithPaginationResponse<GetDelegationsResponse>> {
-    return this.errorHandleWrapper(
-      this.httpService.get.bind(
-        null,
-        this.constructUrl(`${Endpoints.STACKING_DELEGATIONS}/${addr}`,)
-      ),
+
+  async getSupplyByDenom(denom: string): Promise<SupplyByDenomResponse> {
+    return this.getWithErrorHandling(
+      this.constructUrl(
+        Endpoints.SUPPLY_BY_DENOM,
+        createUrlParams({ denom }),
+      )
     );
+  }
+  
+  async getDelegations(addr: string): Promise<GetDelegationsResponse> {
+    return this.getWithErrorHandling(this.constructUrl(`${Endpoints.STAKING_DELEGATIONS}/${addr}`));
+  }
+
+  async getDelegatorsValidators(addr: string): Promise<DelegatorValidatorsResponse> {
+    return this.getWithErrorHandling(
+      this.constructUrl(
+        Endpoints.DELEGATORS_VALIDATORS.replace(
+          RouteParam.DELEGATOR_ADDRES,
+          addr,
+        )
+      )
+    );
+  }
+
+  async getDelegatorsRewards(addr: string): Promise<DelegatorsRewardsResponse> {
+    return this.getWithErrorHandling(
+      this.constructUrl(
+        Endpoints.DELEGATORS_REWARDS.replace(
+          RouteParam.DELEGATOR_ADDRES,
+          addr,
+        )
+      )
+    );
+  }
+
+  async getSpendableBalances(addr: string): Promise<SpendableBalancesResponse> {
+    return this.getWithErrorHandling(this.constructUrl(`${Endpoints.SPENDABLE_BALANCE}/${addr}`));
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

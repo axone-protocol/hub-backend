@@ -9,14 +9,14 @@ import { AddressSchema } from "./schemas/address.schema";
 @Controller(Routes.STACKING)
 export class StackingController {
   constructor(
-        private readonly service: StackingService,
+    private readonly service: StackingService,
   ) { }
     
-    @Get(StackingEndpoints.ME)
-  async getMyStacking(
-        @Query(QueryParam.ADDRESS, new SchemaValidatePipe(AddressSchema))
-          address: string,
+  @Get(StackingEndpoints.MY_OVERVIEW)
+  async getMyStakedOverview(
+    @Query(QueryParam.ADDRESS, new SchemaValidatePipe(AddressSchema))
+      address: string,
   ) {
-    return this.service.getMyStacking(address);
+    return await this.service.getMyStakedOverview(address);
   }
 }

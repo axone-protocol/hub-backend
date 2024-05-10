@@ -11,13 +11,19 @@ export class StackingCache {
     @Inject(CACHE_MANAGER) private cacheService: Cache,
   ) { }
     
-  async cacheUserStacking(address: string, info: unknown) {
+  async setMyStakedOverview(address: string, info: unknown) {
     const serialized = JSON.stringify(info);
-    await this.cacheService.set(this.createRedisKey(address), serialized, config.cache.userStackingTtl);
+    await this.cacheService.set(this.createRedisKey(address), serialized, config.cache.myStakingOverview);
   }
 
-  async getUserStacking(address: string) {
-    return this.cacheService.get(this.createRedisKey(address));
+  async getMyStakedOverview(address: string) {
+    const serialized = await this.cacheService.get(this.createRedisKey(address));
+
+    if (!serialized) {
+      return {};
+    }
+
+    return JSON.parse(serialized as string);
   }
 
   private createRedisKey(address: string) {

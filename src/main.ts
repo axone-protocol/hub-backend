@@ -6,8 +6,8 @@ import { Log } from '@core/loggers/log';
 import { NestLoggerImpl } from '@core/loggers/nest.logger';
 import { AppModule } from '@modules/app.module';
 import { showAvailableRoutes } from '@utils/show-available-routes';
-import '@utils/config-loader';
 import { config } from '@core/config/config';
+import '@utils/config-loader';
 
 (async () => {
   const app: NestExpressApplication =
