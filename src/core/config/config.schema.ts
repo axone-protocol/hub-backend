@@ -13,4 +13,5 @@ export const ConfigSchema = Joi.object({
   REDIS_PORT: Joi.string().required(),
   MY_STAKING_OVERVIEW: Joi.number().required(),
   GLOBAL_STAKING_OVERVIEW: Joi.number().required(),
+  STAKING_VALIDATORS: Joi.number().required(),
 }).required();

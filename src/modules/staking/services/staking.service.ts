@@ -5,9 +5,12 @@ import { StakingCache } from "./staking.cache";
 import { config } from "@core/config/config";
 import { MyStakedOverviewDto } from "../dtos/my-staked-overview.dto";
 import { OsmosisService } from "@core/lib/osmosis/osmosis.service";
-import { Validator } from "@core/lib/okp4/responses/delegators-validators.response";
+import { DelegatorValidatorsResponse, Validator } from "@core/lib/okp4/responses/delegators-validators.response";
 import Big from "big.js";
 import { GlobalStakedOverviewDto } from "../dtos/global-staked-overview.dto";
+import { ValidatorStatus } from "@core/lib/okp4/enums/validator-status.enum";
+import { ValidatorStatusView } from "../enums/validator-status-view.enum";
+import { ValidatorsViewDto } from "../dtos/validators-view.dto";
 
 @Injectable()
 export class StakingService {
@@ -75,10 +78,9 @@ export class StakingService {
     return cache;
   }
 
-
   private async fetchAndCacheGlobalStakedOverview(): Promise<GlobalStakedOverviewDto> {
     const rez = await Promise.all([
-      this.okp4Service.getValidators(),
+      this.okp4Service.getBondValidators(),
       this.osmosisService.getStakingApr(),
       this.fetchTotalSupply(),
     ]);
@@ -105,5 +107,34 @@ export class StakingService {
   private async fetchTotalSupply() {
     const res = await this.okp4Service.getTotalSupply();
     return res.supply.find(({ denom }) => denom === config.app.tokenDenom);
+  } 
+
+  async getValidators() {
+    const cache = await this.cache.getValidators();
+
+    if (cache === null) {
+      return this.fetchAndCacheValidators();
+    }
+
+    return cache;
+  }
+
+  private async fetchAndCacheValidators() {
+    const res = await this.okp4Service.getValidators();
+    const formattedValidators = this.validatorsView(res);
+    await this.cache.setValidators(formattedValidators);
+
+    return formattedValidators;
+  }
+
+  private validatorsView(toView: DelegatorValidatorsResponse): ValidatorsViewDto[] {
+    return toView.validators.map((validator) => ({
+      address: validator.operator_address,
+      name: validator.description.moniker,
+      status: validator.status === ValidatorStatus.BONDED ? ValidatorStatusView.BONDED : ValidatorStatusView.UN_BONDED,
+      jailed: validator.jailed,
+      stakedAmount: validator.delegator_shares,
+      commission: validator.commission.commission_rates.rate
+    }));
   }
 }
