@@ -11,6 +11,7 @@
   "private": true,
   "scripts": {
     "build": "prisma generate && nest build",
+    "lint": "eslint './src/**/*.{js,jsx,ts,tsx}'",
     "start": "nest start",
     "dev": "npm run prisma:init && dotenvx run --env-file=.env.local -- nest start --watch --debug",
     "prisma:init": "npx prisma generate && npx dotenvx run --env-file=.env.local -- prisma migrate deploy",
