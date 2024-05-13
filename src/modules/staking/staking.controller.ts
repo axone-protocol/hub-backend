@@ -24,4 +24,9 @@ export class StakingController {
   async getGlobalOverview() {
     return this.service.getGlobalOverview();
   }
+
+  @Get(StakingEndpoints.VALIDATORS)
+  async getValidators() {
+    return this.service.getValidators();
+  }
 }
