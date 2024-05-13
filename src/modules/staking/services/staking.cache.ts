@@ -7,24 +7,29 @@ import { Cache } from 'cache-manager';
 export class StakingCache {
   private redisStakingPrefix = 'staking';
   private globalOverviewPrefix = 'global_overview';
+  private validatorsPrefix = 'validators';
 
   constructor(
     @Inject(CACHE_MANAGER) private cacheService: Cache,
   ) { }
-    
-  async setMyStakedOverview(address: string, info: unknown) {
-    const serialized = JSON.stringify(info);
-    await this.cacheService.set(this.createRedisKey(address), serialized, config.cache.myStakingOverview);
-  }
 
-  async getMyStakedOverview(address: string) {
-    const serialized = await this.cacheService.get(this.createRedisKey(address));
+  private async getObjByRedisKey(key: string) {
+    const serialized = await this.cacheService.get(key);
 
     if (!serialized) {
       return null;
     }
 
     return JSON.parse(serialized as string);
+  }
+
+  async setMyStakedOverview(address: string, info: unknown) {
+    const serialized = JSON.stringify(info);
+    await this.cacheService.set(this.createRedisKey(address), serialized, config.cache.myStakingOverview);
+  }
+
+  async getMyStakedOverview(address: string) {
+    return this.getObjByRedisKey(this.createRedisKey(address));
   }
 
   async setGlobalStakedOverview(data: unknown) {
@@ -33,13 +38,16 @@ export class StakingCache {
   }
 
   async getGlobalStakedOverview() {
-    const serialized = await this.cacheService.get(this.createRedisKey(this.globalOverviewPrefix));
+    return this.getObjByRedisKey(this.createRedisKey(this.globalOverviewPrefix));
+  }
 
-    if (!serialized) {
-      return null;
-    }
+  async setValidators(validators: unknown[]) {
+    const serialized = JSON.stringify(validators);
+    await this.cacheService.set(this.createRedisKey(this.validatorsPrefix), serialized, config.cache.validators);
+  }
 
-    return JSON.parse(serialized as string);
+  async getValidators() {
+    return this.getObjByRedisKey(this.createRedisKey(this.validatorsPrefix));
   }
 
   private createRedisKey(id: string) {

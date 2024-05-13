@@ -12,11 +12,11 @@ import { DelegatorValidatorsResponse } from "./responses/delegators-validators.r
 import { DelegatorsRewardsResponse } from "./responses/delegators-rewards.response";
 import { SpendableBalancesResponse } from "./responses/spendable-balances.response";
 import { SupplyResponse } from "./responses/supply.response";
+import { ValidatorStatus } from "./enums/validator-status.enum";
 
 @Injectable()
 export class Okp4Service {
   private BASE_URL = config.okp4.url;
-  private VALIDATORS_STATUS = 'BOND_STATUS_BONDED';
   
   constructor(private readonly httpService: HttpService) {}
 
@@ -72,10 +72,18 @@ export class Okp4Service {
     return this.getWithErrorHandling(this.constructUrl(`${Endpoints.SPENDABLE_BALANCE}/${addr}`));
   }
 
-  async getValidators(): Promise<DelegatorValidatorsResponse> {
+  async getBondValidators() {
+    return this.getValidators(ValidatorStatus.BONDED);
+  }
+
+  async getValidators(status?: string): Promise<DelegatorValidatorsResponse> {
+    let params = undefined;
+    if (status) {
+      params = createUrlParams({ status });
+    }
     const url = this.constructUrl(
       Endpoints.VALIDATORS,
-      createUrlParams({ status: this.VALIDATORS_STATUS }),
+      params,
     );
     return this.getWithErrorHandling(url);
   }

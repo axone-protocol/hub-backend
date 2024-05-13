@@ -21,5 +21,6 @@ export const config: ConfigDto = {
   cache: {
     myStakingOverview: +process.env.MY_STAKING_OVERVIEW!,
     globalStakingOverview: +process.env.GLOBAL_STAKING_OVERVIEW!,
+    validators: +process.env.STAKING_VALIDATORS!,
   }
 };
