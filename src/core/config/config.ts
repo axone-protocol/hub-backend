@@ -22,5 +22,9 @@ export const config: ConfigDto = {
     myStakingOverview: +process.env.MY_STAKING_OVERVIEW!,
     globalStakingOverview: +process.env.GLOBAL_STAKING_OVERVIEW!,
     validators: +process.env.STAKING_VALIDATORS!,
+    validatorDelegation: +process.env.STAKING_VALIDATOR_DELEGATION!,
+  },
+  keybase: {
+    url: process.env.KEYBASE_URL!,
   }
 };
