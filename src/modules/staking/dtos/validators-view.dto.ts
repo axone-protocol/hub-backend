@@ -17,4 +17,6 @@ export interface ValidatorsViewDto {
   status: string;
   jailed: boolean;
   stakedAmount: string;
+  uptime: number;
+  votingPower: number;
 }
