@@ -234,7 +234,7 @@ export class StakingService implements OnModuleInit {
   }
 
   private async loadAndCacheValidatorImages() {
-    const validators: ValidatorsViewDto[] = await this.getValidators();
+    const { validators } = await this.okp4Service.getValidators();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let promises: any = [];
     validators.forEach(validator => promises.push(this.keybaseService.getUserLookup(validator.description.identity)));
