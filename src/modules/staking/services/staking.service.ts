@@ -170,6 +170,8 @@ export class StakingService implements OnModuleInit {
         status: validator.status === ValidatorStatus.BONDED ? ValidatorStatusView.BONDED : ValidatorStatusView.UN_BONDED,
         jailed: validator.jailed,
         stakedAmount: validator.delegator_shares,
+        uptime: 0,
+        votingPower: 0,
         commission: {
           updateTime: validator.commission.update_time,
           rate: validator.commission.commission_rates.rate,
