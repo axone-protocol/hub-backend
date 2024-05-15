@@ -107,7 +107,7 @@ export class Okp4Service {
     }
     return this.getWithErrorHandling(
       this.constructUrl(
-        Endpoints.VALIDATO_DELEGATIONS.replace(
+        Endpoints.VALIDATOR_DELEGATIONS.replace(
           RouteParam.VALIDATOR_ADDRES,
           validatorAddr,
         ),

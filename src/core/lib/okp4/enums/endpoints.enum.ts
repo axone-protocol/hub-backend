@@ -6,5 +6,5 @@ export enum Endpoints {
   SPENDABLE_BALANCE = 'cosmos/bank/v1beta1/spendable_balances',
   VALIDATORS = 'cosmos/staking/v1beta1/validators',
   TOTAL_SUPPLY = 'cosmos/bank/v1beta1/supply',
-  VALIDATO_DELEGATIONS = 'cosmos/staking/v1beta1/validators/:validator_addr/delegations',
+  VALIDATOR_DELEGATIONS = 'cosmos/staking/v1beta1/validators/:validator_addr/delegations',
 }
