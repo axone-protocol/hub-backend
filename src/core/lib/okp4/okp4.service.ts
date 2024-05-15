@@ -13,6 +13,7 @@ import { DelegatorsRewardsResponse } from "./responses/delegators-rewards.respon
 import { SpendableBalancesResponse } from "./responses/spendable-balances.response";
 import { SupplyResponse } from "./responses/supply.response";
 import { ValidatorStatus } from "./enums/validator-status.enum";
+import { ValidatorDelegationsResponse } from "./responses/validator-delegations.response";
 
 @Injectable()
 export class Okp4Service {
@@ -93,6 +94,26 @@ export class Okp4Service {
       Endpoints.TOTAL_SUPPLY,
     );
     return this.getWithErrorHandling(url);
+  }
+
+  async getValidatorDelegations(validatorAddr: string, limit?: number, offset?: number): Promise<ValidatorDelegationsResponse> {
+    let params = undefined;
+    if (limit && offset) {
+      params = createUrlParams({
+        'pagination.offset': offset.toString(),
+        'pagination.limit': limit.toString(),
+        'pagination.count_total': true.toString()
+      })
+    }
+    return this.getWithErrorHandling(
+      this.constructUrl(
+        Endpoints.VALIDATOR_DELEGATIONS.replace(
+          RouteParam.VALIDATOR_ADDRES,
+          validatorAddr,
+        ),
+        params
+      )
+    );
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

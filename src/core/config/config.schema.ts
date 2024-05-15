@@ -14,4 +14,6 @@ export const ConfigSchema = Joi.object({
   MY_STAKING_OVERVIEW: Joi.number().required(),
   GLOBAL_STAKING_OVERVIEW: Joi.number().required(),
   STAKING_VALIDATORS: Joi.number().required(),
+  STAKING_VALIDATOR_DELEGATION: Joi.number().required(),
+  KEYBASE_URL: Joi.string().required(),
 }).required();

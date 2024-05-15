@@ -4,6 +4,7 @@ export interface ConfigDto {
   okp4: Okp4Config;
   redis: RedisConfig;
   cache: CacheConfig;
+  keybase: KeybaseConfig;
 }
 
 export interface AppConfig {
@@ -31,4 +32,9 @@ export interface CacheConfig {
   myStakingOverview: number;
   globalStakingOverview: number;
   validators: number;
+  validatorDelegation: number;
+}
+
+export interface KeybaseConfig {
+  url: string;
 }
