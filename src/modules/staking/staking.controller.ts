@@ -1,5 +1,5 @@
 import { Routes } from "@core/enums/routes.enum";
-import { Controller, Get, Query } from "@nestjs/common";
+import { Controller, Get, Param, Query } from "@nestjs/common";
 import { StakingService } from "./services/staking.service";
 import { StakingEndpoints } from "./enums/staking-endpoints.enum";
 import { QueryParam } from "./enums/query-param.enum";
@@ -9,6 +9,7 @@ import { MyValidatorDelegationSchema } from "./schemas/my-validator-delegation.s
 import { MyValidatorDelegationDto } from "./dtos/my-validator-delegation.dto";
 import { ValidatorDelegationsSchema } from "./schemas/validator-delegations.schema";
 import { ValidatorDelegationsDto } from "./dtos/validator-delegations.dto";
+import { StringSchema } from "@core/schemas/string.schema";
 
 @Controller(Routes.STAKING)
 export class StakingController {
@@ -48,5 +49,13 @@ export class StakingController {
       params: ValidatorDelegationsDto,
   ) {
     return this.service.getValidatorDelegations(params);
+  }
+
+  @Get(StakingEndpoints.VALIDATORS_BY_ADDRESS)
+  async getValidatorByAddress(
+    @Param(QueryParam.ADDRESS, new SchemaValidatePipe(StringSchema))
+      address: string,
+  ) {
+    return this.service.getValidatorByAddress(address);
   }
 }
