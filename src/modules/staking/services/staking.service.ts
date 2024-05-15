@@ -1,5 +1,5 @@
 import { Okp4Service } from "@core/lib/okp4/okp4.service";
-import { Injectable, OnModuleInit } from "@nestjs/common";
+import { BadRequestException, Injectable, OnModuleInit } from "@nestjs/common";
 
 import { StakingCache } from "./staking.cache";
 import { config } from "@core/config/config";
@@ -17,6 +17,7 @@ import { ValidatorDelegationsDto } from "../dtos/validator-delegations.dto";
 import { KeybaseService } from "@core/lib/keybase/keybase.service";
 import { Log } from "@core/loggers/log";
 import { UserLookupResponse } from "@core/lib/keybase/responses/user-lookup.response";
+import { StakingError } from "../enums/staking-error.enum";
 
 @Injectable()
 export class StakingService implements OnModuleInit {
@@ -246,5 +247,16 @@ export class StakingService implements OnModuleInit {
       promises.push(this.cache.setValidatorImg(validator.description.identity, imgUrl));
     }
     await Promise.all(promises);
+  }
+
+  async getValidatorByAddress(address: string) {
+    const validators: ValidatorsViewDto[] = await this.getValidators();
+    const validator = validators.find(validator => validator.address === address);
+
+    if (!validator) {
+      throw new BadRequestException(StakingError.VALIDATOR_ADDRESS_NOT_EXISTS);
+    }
+
+    return validator;
   }
 }

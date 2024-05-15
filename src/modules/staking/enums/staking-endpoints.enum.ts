@@ -4,4 +4,5 @@ export enum StakingEndpoints {
   VALIDATOR_DELEGATIONS = '/validator-delegations',
   OVERVIEW = '/overview',
   VALIDATORS = '/validators',
+  VALIDATORS_BY_ADDRESS = '/validators/:address',
 }
