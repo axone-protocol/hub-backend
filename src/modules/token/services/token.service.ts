@@ -24,6 +24,7 @@ export class TokenService implements OnModuleInit {
   async fetchAndCacheTokenInfo() {
     const res = (await this.osmosisService.getTokenInfo(config.app.token))[0];
     const mcap = await this.getMcapByOrder();
+    const apr = await this.osmosisService.getStakingApr();
 
     const tokenInfoDto: TokenInfoDto = {
       price: {
@@ -35,6 +36,7 @@ export class TokenService implements OnModuleInit {
         change: mcap!.change,
       },
       volume: res.volume_24h,
+      apr: apr.toString(),
     };
 
     await this.cache.cacheTokenInfo(tokenInfoDto);
