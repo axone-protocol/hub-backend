@@ -1,18 +1,17 @@
 import { config } from "@core/config/config";
-import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import { Inject, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { createHash } from 'crypto';
-import { Cache } from 'cache-manager';
 import { StakingCachePrefix } from "../enums/staking-cache-prefix.enum";
+import { RedisService } from "@core/lib/redis.service";
 
 @Injectable()
 export class StakingCache {
   constructor(
-    @Inject(CACHE_MANAGER) private cacheService: Cache,
+    private readonly redisService: RedisService,
   ) { }
 
   private async getObjByRedisKey(key: string) {
-    const serialized = await this.cacheService.get(key);
+    const serialized = await this.redisService.get(key);
 
     if (!serialized) {
       return null;
@@ -23,7 +22,7 @@ export class StakingCache {
 
   async setMyStakedOverview(address: string, info: unknown) {
     const serialized = JSON.stringify(info);
-    await this.cacheService.set(this.createRedisKey(address), serialized, config.cache.myStakingOverview);
+    await this.redisService.setWithTTL(this.createRedisKey(address), serialized, config.cache.myStakingOverview);
   }
 
   async getMyStakedOverview(address: string) {
@@ -32,7 +31,7 @@ export class StakingCache {
 
   async setGlobalStakedOverview(data: unknown) {
     const serialized = JSON.stringify(data);
-    await this.cacheService.set(this.createRedisKey(StakingCachePrefix.GLOBAL_OVERVIEW), serialized, config.cache.globalStakingOverview);
+    await this.redisService.setWithTTL(this.createRedisKey(StakingCachePrefix.GLOBAL_OVERVIEW), serialized, config.cache.globalStakingOverview);
   }
 
   async getGlobalStakedOverview() {
@@ -41,7 +40,7 @@ export class StakingCache {
 
   async setValidators(validators: unknown[]) {
     const serialized = JSON.stringify(validators);
-    await this.cacheService.set(this.createRedisKey(StakingCachePrefix.VALIDATORS), serialized, config.cache.validators);
+    await this.redisService.setWithTTL(this.createRedisKey(StakingCachePrefix.VALIDATORS), serialized, config.cache.validators);
   }
 
   async getValidators() {
@@ -51,7 +50,7 @@ export class StakingCache {
   async setValidatorDelegation(address: string, validatorAddress: string, data: unknown) {
     const serialized = JSON.stringify(data);
     const hash = this.createValidatorDelegationHash(address, validatorAddress);
-    await this.cacheService.set(
+    await this.redisService.setWithTTL(
       this.createRedisKey(hash),
       serialized,
       config.cache.validators
@@ -70,11 +69,11 @@ export class StakingCache {
   }
 
   async setValidatorImg(id: string, imgUrl: string) {
-    this.cacheService.set(this.createRedisKey(StakingCachePrefix.VALIDATOR_IMG, id), imgUrl);
+    this.redisService.set(this.createRedisKey(StakingCachePrefix.VALIDATOR_IMG, id), imgUrl);
   }
 
   async getValidatorImg(id: string) {
-    return this.cacheService.get(this.createRedisKey(StakingCachePrefix.VALIDATOR_IMG, id));
+    return this.redisService.get(this.createRedisKey(StakingCachePrefix.VALIDATOR_IMG, id));
   }
 
   private createRedisKey(...ids: string[]) {

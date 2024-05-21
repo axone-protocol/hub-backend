@@ -25,7 +25,7 @@ export interface Okp4Config {
 
 export interface RedisConfig {
   host: string;
-  port: string;
+  port: number;
 }
 
 export interface CacheConfig {
