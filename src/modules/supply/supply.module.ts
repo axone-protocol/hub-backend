@@ -6,6 +6,7 @@ import { PrismaService } from "@core/lib/prisma.service";
 import { SupplyJobs } from "./services/supply.jobs";
 import { SupplyCache } from "./services/supply.cache";
 import { HttpService } from "@core/lib/http.service";
+import { RedisService } from "@core/lib/redis.service";
 
 @Module({
   providers: [
@@ -15,6 +16,7 @@ import { HttpService } from "@core/lib/http.service";
     SupplyJobs,
     SupplyCache,
     HttpService,
+    RedisService,
   ],
   controllers: [SupplyController],
 })
