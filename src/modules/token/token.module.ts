@@ -6,6 +6,7 @@ import { TokenCache } from "./services/token.cache";
 import { TokenJobs } from "./services/token.jobs";
 import { PrismaService } from "@core/lib/prisma.service";
 import { TokenController } from "./token.controller";
+import { RedisService } from "@core/lib/redis.service";
 
 @Module({
   imports: [],
@@ -16,6 +17,7 @@ import { TokenController } from "./token.controller";
     TokenService,
     TokenCache,
     TokenJobs,
+    RedisService,
   ],
   controllers: [
     TokenController,

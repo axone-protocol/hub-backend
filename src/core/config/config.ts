@@ -16,7 +16,7 @@ export const config: ConfigDto = {
   },
   redis: {
     host: process.env.REDIS_HOST!,
-    port: process.env.REDIS_PORT!
+    port: +process.env.REDIS_PORT!
   },
   cache: {
     myStakingOverview: +process.env.MY_STAKING_OVERVIEW!,
