@@ -5,4 +5,6 @@ export enum StakingEndpoints {
   OVERVIEW = '/overview',
   VALIDATORS = '/validators',
   VALIDATORS_BY_ADDRESS = '/validators/:address',
+  VALIDATORS_UPTIME = '/validators/:address/uptime',
+  VALIDATORS_RECENTLY_PROPOSED_BLOCKS = '/validators/:address/recently-proposed-blocks',
 }

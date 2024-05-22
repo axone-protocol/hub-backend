@@ -3,6 +3,7 @@ import { Injectable } from "@nestjs/common";
 import { createHash } from 'crypto';
 import { StakingCachePrefix } from "../enums/staking-cache-prefix.enum";
 import { RedisService } from "@core/lib/redis.service";
+import { v4 } from 'uuid';
 
 @Injectable()
 export class StakingCache {
@@ -74,6 +75,32 @@ export class StakingCache {
 
   async getValidatorImg(id: string) {
     return this.redisService.get(this.createRedisKey(StakingCachePrefix.VALIDATOR_IMG, id));
+  }
+
+  async setValidatorSignatures(address: string, blocks: unknown) {
+    const key = this.createRedisKey(StakingCachePrefix.VALIDATOR_SIGNATURES, address, v4());
+    this.redisService.setWithTTL(key, JSON.stringify(blocks), config.cache.validatorSignature);
+  }
+
+  async getValidatorSignatures(address: string) {
+    const pattern = this.createRedisKey(StakingCachePrefix.VALIDATOR_SIGNATURES, address, '*');
+    const keys = await this.redisService.keys(pattern);
+    const signatures = await Promise.all(keys.map((key: string) => this.redisService.get(key)));
+    
+    return signatures.map(signature => JSON.parse(signature!));
+  }
+
+  async setRecentlyProposedBlock(block: unknown) {
+    const key = this.createRedisKey(StakingCachePrefix.VALIDATOR_RECENTLY_PROPOSED_BLOCKS, v4());
+    this.redisService.setWithTTL(key, JSON.stringify(block), config.cache.validatorSignature);
+  }
+
+  async getRecentlyProposedBlock() {
+    const pattern = this.createRedisKey(StakingCachePrefix.VALIDATOR_RECENTLY_PROPOSED_BLOCKS, '*');
+    const keys = await this.redisService.keys(pattern);
+    const recentlyProposedBlocks = await Promise.all(keys.map((key: string) => this.redisService.get(key)));
+    
+    return recentlyProposedBlocks.map(block => JSON.parse(block!));
   }
 
   private createRedisKey(...ids: string[]) {

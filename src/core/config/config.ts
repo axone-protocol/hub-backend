@@ -13,6 +13,7 @@ export const config: ConfigDto = {
   },
   okp4: {
     url: process.env.OKP4_BASE_URL!,
+    wss: process.env.OKP4_WSS_URL!,
   },
   redis: {
     host: process.env.REDIS_HOST!,
@@ -23,6 +24,7 @@ export const config: ConfigDto = {
     globalStakingOverview: +process.env.GLOBAL_STAKING_OVERVIEW!,
     validators: +process.env.STAKING_VALIDATORS!,
     validatorDelegation: +process.env.STAKING_VALIDATOR_DELEGATION!,
+    validatorSignature: +process.env.VALIDATOR_SIGNATURE!,
   },
   keybase: {
     url: process.env.KEYBASE_URL!,
