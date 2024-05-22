@@ -58,4 +58,17 @@ export class StakingController {
   ) {
     return this.service.getValidatorByAddress(address);
   }
+
+  @Get(StakingEndpoints.VALIDATORS_UPTIME)
+  async getValidatorUptime(
+    @Param(QueryParam.ADDRESS, new SchemaValidatePipe(StringSchema))
+      address: string,
+  ) {
+    return this.service.getValidatorUptime(address);
+  }
+
+  @Get(StakingEndpoints.VALIDATORS_RECENTLY_PROPOSED_BLOCKS)
+  async getValidatorRecentlyProposedBlocks() {
+    return this.service.getValidatorRecentlyProposedBlocks();
+  }
 }

@@ -14,12 +14,21 @@ import { SpendableBalancesResponse } from "./responses/spendable-balances.respon
 import { SupplyResponse } from "./responses/supply.response";
 import { ValidatorStatus } from "./enums/validator-status.enum";
 import { ValidatorDelegationsResponse } from "./responses/validator-delegations.response";
+import { fromBase64, toBase64, fromHex, toHex } from '@cosmjs/encoding';
+import { sha256 } from '@cosmjs/crypto';
+import { BlocksResponse } from "./responses/blocks.response";
+import { WebSocket } from 'ws';
+import { Log } from "@core/loggers/log";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 @Injectable()
 export class Okp4Service {
   private BASE_URL = config.okp4.url;
   
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private eventEmitter: EventEmitter2,
+  ) { }
 
   private constructUrl(endpoint: string, params?: string): string {
     return `${this.BASE_URL}/${endpoint}${params ? `?${params}` : ''}`;
@@ -114,6 +123,53 @@ export class Okp4Service {
         params
       )
     );
+  }
+
+  async getLatestBlocks(): Promise<BlocksResponse> {
+    return this.getWithErrorHandling(
+      this.constructUrl(Endpoints.BLOCKS_LATEST),
+    )
+  }
+
+  async getBlocksByHeight(height: number): Promise<BlocksResponse>  {
+    return this.getWithErrorHandling(
+      this.constructUrl(
+        Endpoints.BLOCKS_BY_HEIGHT.replace(RouteParam.HEIGHT, height.toString())
+      )
+    )
+  }
+
+  apiPubkeyToAddr(pubkey: string) {
+    return toBase64(fromHex(toHex(sha256(fromBase64(pubkey))).slice(0, 40)))
+  }
+
+  wssPubkeyToAddr(pubkey: string) {
+    return toHex(sha256(fromBase64(pubkey))).slice(0, 40);
+  }
+
+  async connectToNewBlockSocket(event: string) {
+    const client = new WebSocket(config.okp4.wss);
+    client.on('open', () => {
+      client.send(JSON.stringify({"jsonrpc":"2.0","method":"subscribe","id":0,"params":{"query":"tm.event='NewBlock'"}}));
+    });
+    client.on('message', (data) => {
+      if (Buffer.isBuffer(data)) {
+        const message = data.toString('utf-8');
+        try {
+          const jsonData = JSON.parse(message);
+          if (
+            jsonData &&
+            jsonData?.result &&
+            jsonData?.result?.query === "tm.event='NewBlock'"
+          ) {
+            this.eventEmitter.emit(event, jsonData?.result?.data?.value);
+          }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (e: any) {
+          Log.warn('[OKP4] Problem with parsing data from wss\n' + e.message);
+        }
+      }
+    });
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

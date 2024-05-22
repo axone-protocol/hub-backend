@@ -18,6 +18,12 @@ import { KeybaseService } from "@core/lib/keybase/keybase.service";
 import { Log } from "@core/loggers/log";
 import { UserLookupResponse } from "@core/lib/keybase/responses/user-lookup.response";
 import { StakingError } from "../enums/staking-error.enum";
+import { BlocksResponse, Signature } from "@core/lib/okp4/responses/blocks.response";
+import { Event } from "@core/enums/event.enum";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { toPercents } from "@utils/to-percents";
+import { RecentlyProposedBlockDto } from "../dtos/recently-proposed-block.dto";
+import { SignatureDto } from "../dtos/signature.dto";
 
 @Injectable()
 export class StakingService implements OnModuleInit {
@@ -26,16 +32,20 @@ export class StakingService implements OnModuleInit {
     private readonly cache: StakingCache,
     private readonly osmosisService: OsmosisService,
     private readonly keybaseService: KeybaseService,
+    private eventEmitter: EventEmitter2,
   ) { }
 
   async onModuleInit() {
     try {
       await this.loadAndCacheValidatorImages();
-    } catch (e) {
-      Log.warn("Some of images failed to load");
+      await this.okp4Service.connectToNewBlockSocket(Event.BLOCK_UPDATE);
+      this.eventEmitter.on(Event.BLOCK_UPDATE, (blocks: BlocksResponse) => this.newBlock(blocks));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      Log.warn("Staking init problem " + e.message);
     }
   }
-    
+
   async getMyStakedOverview(address: string) {
     const cache = await this.cache.getMyStakedOverview(address);
 
@@ -143,20 +153,23 @@ export class StakingService implements OnModuleInit {
       return this.fetchAndCacheValidators();
     }
 
-    return cache;
+    return this.validatorsView(cache);
   }
 
   private async fetchAndCacheValidators() {
-    const res = await this.okp4Service.getValidators();
-    const formattedValidators = await this.validatorsView(res.validators);
-    await this.cache.setValidators(formattedValidators);
+    const { validators } = await this.okp4Service.getValidators();
+    await this.cache.setValidators(validators);
 
-    return formattedValidators;
+    return this.validatorsView(validators);
   }
 
   private async validatorsView(toView: Validator[]): Promise<ValidatorsViewDto[]> {
     const view = [];
+    const globalOverview: GlobalStakedOverviewDto = await this.getGlobalOverview();
+
     for (const validator of toView) {
+      const uptime = await this.calculateValidatorUptime(validator.operator_address);
+      const votingPower = Big(validator.delegator_shares).div(globalOverview.totalStaked).toNumber();
       const logo = await this.cache.getValidatorImg(validator.description.identity) as string;
       view.push({
         logo,
@@ -171,11 +184,11 @@ export class StakingService implements OnModuleInit {
         status: validator.status === ValidatorStatus.BONDED ? ValidatorStatusView.BONDED : ValidatorStatusView.UN_BONDED,
         jailed: validator.jailed,
         stakedAmount: validator.delegator_shares,
-        uptime: 0,
-        votingPower: 0,
+        uptime: toPercents(uptime),
+        votingPower: toPercents(votingPower),
         commission: {
           updateTime: validator.commission.update_time,
-          rate: validator.commission.commission_rates.rate,
+          rate: toPercents(validator.commission.commission_rates.rate),
           maxChangeRate: validator.commission.commission_rates.max_change_rate,
           maxRate: validator.commission.commission_rates.max_rate,
         },
@@ -193,7 +206,7 @@ export class StakingService implements OnModuleInit {
 
     return cache;
   }
-  
+
   private async fetchAndSaveMyValidatorDelegation(payload: MyValidatorDelegationDto) {
     const rez = await Promise.all([
       this.fetchMyStakedAmount(payload.address, payload.validatorAddress),
@@ -235,18 +248,23 @@ export class StakingService implements OnModuleInit {
   }
 
   private async loadAndCacheValidatorImages() {
-    const { validators } = await this.okp4Service.getValidators();
+    try {
+      const { validators } = await this.okp4Service.getValidators();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let promises: any = [];
+      validators.forEach(validator => promises.push(this.keybaseService.getUserLookup(validator.description.identity)));
+      const rez: UserLookupResponse[] = await Promise.all(promises);
+      promises = [];
+      for (let i = 0; i < validators.length; i++) {
+        const validator = validators[i];
+        const imgUrl = rez[i]?.them[0]?.pictures?.primary?.url || '';
+        promises.push(this.cache.setValidatorImg(validator.description.identity, imgUrl));
+      }
+      await Promise.all(promises);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let promises: any = [];
-    validators.forEach(validator => promises.push(this.keybaseService.getUserLookup(validator.description.identity)));
-    const rez: UserLookupResponse[] = await Promise.all(promises);
-    promises = [];
-    for (let i = 0; i < validators.length; i++) {
-      const validator = validators[i];
-      const imgUrl = rez[i]?.them[0]?.pictures?.primary?.url || '';
-      promises.push(this.cache.setValidatorImg(validator.description.identity, imgUrl));
+    } catch (e: any) {
+      Log.warn("Failed to load validator image " + e.message);
     }
-    await Promise.all(promises);
   }
 
   async getValidatorByAddress(address: string) {
@@ -258,5 +276,128 @@ export class StakingService implements OnModuleInit {
     }
 
     return validator;
+  }
+
+  async newBlock(res: BlocksResponse) {
+    try {
+      await this.cacheSignatures(res.block.last_commit.signatures);
+      await this.cacheBlock(res);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      Log.warn("New block error " + e.message);
+    }
+  }
+  
+  private async cacheBlock(res: BlocksResponse) {
+    try {
+      await this.cache.setRecentlyProposedBlock({
+        height: res.block.last_commit.height,
+        blockHash: res.block.last_commit.block_id.hash,
+        txs: res.block.data.txs.length,
+        time: new Date(),
+      });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      Log.warn("Failed to cache recently proposed block " + e.message);
+    }
+  }
+
+  private async cacheSignatures(signatures: Signature[]) {
+    try {
+      const mapValidatorAddrToPubkey = new Map();
+      await this.fillValidatorAddrToPubkey(mapValidatorAddrToPubkey);
+  
+      for (const signature of signatures) {
+        const addr = mapValidatorAddrToPubkey.get(signature.validator_address);
+        if (addr) {
+          await this.cache.setValidatorSignatures(addr, this.signatureView(signature));
+        }
+      }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      Log.warn("Parse & cache signature error " + e.message);
+    }
+  }
+
+  private signatureView(signature: Signature) {
+    return {
+      blockIdFlag: signature.block_id_flag,
+      address: signature.validator_address,
+      timestamp: signature.timestamp,
+      signature: signature.signature,
+    }
+  }
+
+  private async fillValidatorAddrToPubkey(map: Map<string, string>) {
+    await this.fetchAndCacheValidators();
+    const validators: Validator[] = await this.cache.getValidators();
+
+    for (const validator of validators) {
+      const pubkey = this.okp4Service.wssPubkeyToAddr(validator.consensus_pubkey.key).toUpperCase();
+      map.set(pubkey, validator.operator_address);
+    }
+  }
+
+  private async calculateValidatorUptime(address: string) {
+    const blocks: Signature[] = await this.cache.getValidatorSignatures(address);
+    const signed = blocks.reduce((acc, block) => {
+      if (block && block.signature) {
+        acc += 1;
+      }
+      return acc;
+    }, 0);
+    if (!blocks || blocks.length === 0) {
+      return 0;
+    }
+    return Big(blocks.length).div(signed).toNumber();
+  }
+  
+  async getValidatorUptime(address: string) {
+    const signatures = await this.getSortedValidatorSignatures(address);
+    const current = await this.getLastBlockHeight();
+
+    return {
+      blocks: signatures,
+      current,
+    }
+  }
+
+  async getValidatorRecentlyProposedBlocks() {
+    const recentlyProposedBlocks = await this.getSortedRecentlyProposedBlocks();
+    return {
+      recentlyProposedBlocks,
+      total: recentlyProposedBlocks.length
+    }
+  }
+
+  private async getLastBlockHeight() {
+    const recentlyBlocks = await this.getSortedRecentlyProposedBlocks();
+    return recentlyBlocks[0]?.height || 0;
+  }
+
+  private async getSortedRecentlyProposedBlocks() {
+    try {
+      const recentlyBlocks: RecentlyProposedBlockDto[] = await this.cache.getRecentlyProposedBlock();
+      return recentlyBlocks.sort((a, b) => Number.parseFloat(b.height) - Number.parseFloat(a.height)); 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch(e: any) {
+      Log.warn("Cache recently proposed blocks deserialization error " + e.message);
+    }
+
+    return [];
+  }
+
+  private async getSortedValidatorSignatures(address: string) {
+    try {
+      const signatures: SignatureDto[] = await this.cache.getValidatorSignatures(address);
+      return signatures
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, 60);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      Log.warn("Cache signatures deserialization error " + e.message);
+    }
+
+    return [];
   }
 }
