@@ -21,6 +21,7 @@ export interface OsmosisConfig {
 
 export interface Okp4Config {
   url: string;
+  wss: string;
 }
 
 export interface RedisConfig {
@@ -33,6 +34,7 @@ export interface CacheConfig {
   globalStakingOverview: number;
   validators: number;
   validatorDelegation: number;
+  validatorSignature: number;
 }
 
 export interface KeybaseConfig {

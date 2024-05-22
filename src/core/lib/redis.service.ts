@@ -21,4 +21,8 @@ export class RedisService {
   async setWithTTL(key: string, value: string, ttl: number) {
     return this.client.set(key, value, 'EX', ttl);
   }
+
+  async keys(pattern: string): Promise<string[]> {
+    return this.client.keys(pattern);
+  }
 }
