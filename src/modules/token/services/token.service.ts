@@ -7,18 +7,73 @@ import { PrismaService } from "@core/lib/prisma.service";
 import { TokenInfoDto } from "../dtos/token-info.dto";
 import { HistoricalChartRes } from "@core/lib/osmosis/responses/historical-chart.response";
 import Big from "big.js";
+import { DBTimeInterval } from "@core/enums/db-time-interval.enum";
+import { Range } from "@core/enums/range.enum";
+import { HistoricalChartConf, RangeHistoricalChartConf } from "../dtos/range-historical-chart-conf.dto";
+import { HistoricalPrice } from "../dtos/historical-price.dto";
+import { TimeBucketDto } from "../dtos/time-bucket.dto";
 
 @Injectable()
 export class TokenService implements OnModuleInit {
+  private rangeTimeIntervalMap: RangeHistoricalChartConf;
+
   constructor(
     private readonly osmosisService: OsmosisService,
     private readonly cache: TokenCache,
     private readonly prismaService: PrismaService,
-  ) { }
+  ) { 
+    this.rangeTimeIntervalMap = new Map([
+      [Range.ALL, { interval: DBTimeInterval.MONTH }],
+      [Range.DAY, { interval: DBTimeInterval.TWO_HOUR, count: 12 }],
+      [Range.WEEK, { interval: DBTimeInterval.SIX_HOUR, count: 28 }],
+      [Range.MONTH, { interval: DBTimeInterval.DAY, count: 30 }],
+      [Range.THREE_MONTH, { interval: DBTimeInterval.THREE_DAY, count: 30 }],
+      [Range.YEAR, { interval: DBTimeInterval.MONTH, count: 12 }]
+    ]);
+  }
 
   async onModuleInit() {
     await this.fetchAndSaveMcap();
     await this.fetchAndCacheTokenInfo();
+    await this.initTokenHistoricalCache();
+  }
+
+  async initTokenHistoricalCache() {
+    const promises = [];
+
+    for (const [range, conf] of this.rangeTimeIntervalMap) {
+      promises.push(this.calculateAndCacheTokenHistoricalPrice(range, conf));
+    }
+
+    await Promise.all(promises);
+  }
+
+  private async calculateAndCacheTokenHistoricalPrice(range: Range, { interval, count }: HistoricalChartConf) {
+    const historicalPrice = await this.timeBucket(interval, DBOrder.DESC, count);
+    await this.cache.cacheTokenHistoricalPrice(range, historicalPrice);
+  }
+
+  private async timeBucket(
+    interval: DBTimeInterval,
+    order: DBOrder,
+    limit?: number,
+  ): Promise<HistoricalPrice[]> {
+    const bucket: TimeBucketDto[] = await this.prismaService.$queryRawUnsafe(`
+        SELECT time_bucket('${interval}', time) as interval, avg(price) as avg_price
+        FROM historical_prices
+        GROUP BY interval
+        ORDER BY interval ${order}
+        ${limit ? `LIMIT ${limit}` : ''};
+      `);
+
+    return this.fromBucket(bucket);
+  }
+    
+  private fromBucket(bucket: TimeBucketDto[]): HistoricalPrice[] {
+    return bucket.map((item) => ({
+      time: item.interval,
+      price: item.avg_price,
+    }));
   }
   
   async fetchAndCacheTokenInfo() {
