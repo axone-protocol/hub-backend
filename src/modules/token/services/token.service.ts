@@ -12,6 +12,7 @@ import { Range } from "@core/enums/range.enum";
 import { HistoricalChartConf, RangeHistoricalChartConf } from "../dtos/range-historical-chart-conf.dto";
 import { HistoricalPrice } from "../dtos/historical-price.dto";
 import { TimeBucketDto } from "../dtos/time-bucket.dto";
+import { Log } from "@core/loggers/log";
 
 @Injectable()
 export class TokenService implements OnModuleInit {
@@ -49,8 +50,13 @@ export class TokenService implements OnModuleInit {
   }
 
   private async calculateAndCacheTokenHistoricalPrice(range: Range, { interval, count }: HistoricalChartConf) {
-    const historicalPrice = await this.timeBucket(interval, DBOrder.DESC, count);
-    await this.cache.cacheTokenHistoricalPrice(range, historicalPrice);
+    try {
+      const historicalPrice = await this.timeBucket(interval, DBOrder.DESC, count);
+      await this.cache.cacheTokenHistoricalPrice(range, historicalPrice);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      Log.warn("Failed to cache token historical price " + e.message);
+    }
   }
 
   private async timeBucket(
