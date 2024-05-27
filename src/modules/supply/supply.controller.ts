@@ -22,7 +22,7 @@ export class SupplyController {
     @Query(QueryParam.RANGE, new SchemaValidatePipe(HistoricalRangeSchema))
       range: Range,
   ) {
-    return this.cache.getCacheByRange(range);
+    return this.cache.getSupplyHistorical(range);
   }
 
   @Get()

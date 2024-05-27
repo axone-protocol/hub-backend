@@ -23,6 +23,6 @@ export class TokenController {
     @Query(QueryParam.RANGE, new SchemaValidatePipe(HistoricalPriceRange))
       range: Range,
   ) {
-    return this.cache.getCacheByRange(range);
+    return this.cache.getTokenHistoricalPrice(range);
   }
 }
