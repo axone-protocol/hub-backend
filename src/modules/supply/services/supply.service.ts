@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, OnModuleInit } from "@nestjs/common";
 import Big from 'big.js';
 
 import { config } from "@core/config/config";
@@ -8,13 +8,76 @@ import { PrismaService } from "@core/lib/prisma.service";
 
 import { CurrentSupplyDto } from "../dtos/current-supply.dto";
 import { Range } from "@core/enums/range.enum";
+import { HistoricalChartConf, RangeHistoricalChartConf } from "@core/types/range-historical-chart-conf.dto";
+import { DBTimeInterval } from "@core/enums/db-time-interval.enum";
+import { Log } from "@core/loggers/log";
+import { SupplyCache } from "./supply.cache";
+import { TimeBucketDto } from "../dtos/time-bucket.dto";
+import { ChangeIntervalDto } from "../dtos/change-interval.dto";
 
 @Injectable()
-export class SupplyService {
+export class SupplyService implements OnModuleInit {
+  private rangeTimeIntervalMap: RangeHistoricalChartConf;
+  
   constructor(
     private readonly okp4Service: Okp4Service,
     private readonly prismaService: PrismaService,
-  ) { }
+    private readonly cache: SupplyCache,
+  ) {
+    this.rangeTimeIntervalMap = new Map([
+      [Range.HOUR, { interval: DBTimeInterval.TWO_MINUTES, count: 30 }],
+      [Range.DAY, { interval: DBTimeInterval.TWO_HOUR, count: 12 }],
+      [Range.WEEK, { interval: DBTimeInterval.SIX_HOUR, count: 28 }],
+      [Range.MONTH, { interval: DBTimeInterval.DAY, count: 30 }],
+      [Range.ALL, { interval: DBTimeInterval.MONTH}],
+    ]);
+  }
+
+  async onModuleInit() {
+    await this.initSupplyHistoricalCache();
+  }
+  
+  async initSupplyHistoricalCache() {
+    const promises = [];
+
+    for (const [range, conf] of this.rangeTimeIntervalMap) {
+      promises.push(this.calculateAndCacheSupplyHistoricalPrice(range, conf));
+    }
+
+    await Promise.all(promises);
+  }
+
+  private async calculateAndCacheSupplyHistoricalPrice(range: Range, { interval, count }: HistoricalChartConf) {
+    try {
+      const historicalPrice = await this.timeBucket(interval, DBOrder.DESC, count);
+      await this.cache.setSupplyHistorical(range, historicalPrice);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      Log.warn("Failed to cache supply historical price " + e.message);
+    }
+  }
+
+  private async timeBucket(
+    interval: DBTimeInterval,
+    order: DBOrder,
+    limit?: number,
+  ) {
+    const bucket: TimeBucketDto[] = await this.prismaService.$queryRawUnsafe(`
+        SELECT time_bucket('${interval}', time) as interval, sum(change) as sum_change
+        FROM historical_supply
+        GROUP BY interval
+        ORDER BY interval ${order}
+        ${limit ? `LIMIT ${limit}` : ''};
+    `);
+    return this.fromBucket(bucket);
+  }
+
+  private fromBucket(bucket: TimeBucketDto[]): ChangeIntervalDto[] {
+    return bucket.map((item) => ({
+      time: item.interval,
+      change: item.sum_change,
+    }));
+  }
     
   async fetchAndSaveCurrentSupply() {
     try {

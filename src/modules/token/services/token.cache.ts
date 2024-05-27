@@ -1,7 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { TokenInfoDto } from "../dtos/token-info.dto";
 import { HistoricalPrice } from "../dtos/historical-price.dto";
-import { PrismaService } from "@core/lib/prisma.service";
 import { Range } from "@core/enums/range.enum";
 import { RedisService } from "@core/lib/redis.service";
 
@@ -10,14 +9,15 @@ export class TokenCache {
   private redisTokenPrefix = 'token';
   private tokenInfoPrefix = 'info';
 
-  constructor(
-    private readonly prismaService: PrismaService,
-    private readonly redisService: RedisService,
-  ) { }
+  constructor(private readonly redisService: RedisService) { }
     
-  async getCacheByRange(range: Range): Promise<HistoricalPrice[]> {
+  async getTokenHistoricalPrice(range: Range): Promise<HistoricalPrice[]> {
     const serializedCache = await this.redisService.get(this.createRedisKey(range));
     return JSON.parse(serializedCache as string);
+  }
+
+  async setTokenHistoricalPrice(range: Range, data: unknown[]) {
+    this.redisService.set(this.createRedisKey(range), JSON.stringify(data));
   }
 
   async cacheTokenInfo(info: TokenInfoDto) {
@@ -33,10 +33,6 @@ export class TokenCache {
     }
 
     return JSON.parse(serialized as string);
-  }
-
-  async cacheTokenHistoricalPrice(range: Range, data: unknown[]) {
-    this.redisService.set(this.createRedisKey(range), JSON.stringify(data));
   }
 
   private createRedisKey(id: string) {
