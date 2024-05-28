@@ -1,5 +1,7 @@
+import { SignatureViewStatus } from "../enums/signature-view-status.enum";
+
 export interface SignatureDto {
-  blockIdFlag: string;
+  status: SignatureViewStatus;
   address: string;
   timestamp: string;
   signature: string;

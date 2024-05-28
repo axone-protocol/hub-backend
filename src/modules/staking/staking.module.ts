@@ -7,6 +7,7 @@ import { StakingCache } from "./services/staking.cache";
 import { OsmosisService } from "@core/lib/osmosis/osmosis.service";
 import { KeybaseService } from "@core/lib/keybase/keybase.service";
 import { RedisService } from "@core/lib/redis.service";
+import { StakingGateway } from "./staking.gateway";
 
 @Module({
   imports: [],
@@ -18,6 +19,7 @@ import { RedisService } from "@core/lib/redis.service";
     StakingService,
     StakingCache,
     HttpService,
+    StakingGateway,
   ],
   controllers: [
     StakingController,

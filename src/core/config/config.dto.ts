@@ -10,7 +10,7 @@ export interface ConfigDto {
 export interface AppConfig {
   mode: string;
   host: string;
-  port: string;
+  port: number;
   token: string;
   tokenDenom: string;
 }

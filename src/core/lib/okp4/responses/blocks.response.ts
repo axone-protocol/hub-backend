@@ -1,5 +1,8 @@
 export interface BlocksResponse {
   block: {
+    header: {
+      proposer_address: string;
+    }
     data: {
       txs: unknown[],
     },
