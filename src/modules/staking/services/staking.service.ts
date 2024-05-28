@@ -24,6 +24,7 @@ import { EventEmitter2 } from "@nestjs/event-emitter";
 import { toPercents } from "@utils/to-percents";
 import { RecentlyProposedBlockDto } from "../dtos/recently-proposed-block.dto";
 import { SignatureDto } from "../dtos/signature.dto";
+import { SignatureViewStatus } from "../enums/signature-view-status.enum";
 
 @Injectable()
 export class StakingService implements OnModuleInit {
@@ -280,7 +281,7 @@ export class StakingService implements OnModuleInit {
 
   async newBlock(res: BlocksResponse) {
     try {
-      await this.cacheSignatures(res.block.last_commit.signatures);
+      await this.cacheSignatures(res.block.last_commit.signatures, res.block.header.proposer_address);
       await this.cacheBlock(res);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
@@ -296,32 +297,46 @@ export class StakingService implements OnModuleInit {
         txs: res.block.data.txs.length,
         time: new Date(),
       });
+      this.eventEmitter.emit(Event.BLOCK_CACHED);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       Log.warn("Failed to cache recently proposed block " + e.message);
     }
   }
 
-  private async cacheSignatures(signatures: Signature[]) {
+  private async cacheSignatures(signatures: Signature[], validatorProposedAddr: string) {
     try {
       const mapValidatorAddrToPubkey = new Map();
       await this.fillValidatorAddrToPubkey(mapValidatorAddrToPubkey);
-  
+      const signatureToAddressMap = new Map();
+
       for (const signature of signatures) {
         const addr = mapValidatorAddrToPubkey.get(signature.validator_address);
         if (addr) {
-          await this.cache.setValidatorSignatures(addr, this.signatureView(signature));
+          const signatureView = this.signatureView(signature, mapValidatorAddrToPubkey.get(validatorProposedAddr));
+          const value = signatureToAddressMap.get(addr) || [];
+          value.push(signatureView);
+          signatureToAddressMap.set(addr, value);
+          await this.cache.setValidatorSignatures(addr, signatureView);
         }
       }
+
+      this.eventEmitter.emit(Event.SIGNATURES_CACHED, signatureToAddressMap);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       Log.warn("Parse & cache signature error " + e.message);
     }
   }
 
-  private signatureView(signature: Signature) {
+  private signatureView(signature: Signature, proposedAddr?: string) {
+    const status = signature.signature
+      ? (proposedAddr && signature.validator_address === proposedAddr)
+        ? SignatureViewStatus.PROPOSED
+        : SignatureViewStatus.SIGNED
+      : SignatureViewStatus.MISSED;
+
     return {
-      blockIdFlag: signature.block_id_flag,
+      status,
       address: signature.validator_address,
       timestamp: signature.timestamp,
       signature: signature.signature,
@@ -371,8 +386,13 @@ export class StakingService implements OnModuleInit {
   }
 
   private async getLastBlockHeight() {
+    const lastBlock = await this.getLastBlock();
+    return lastBlock && lastBlock?.height || 0;
+  }
+
+  async getLastBlock() {
     const recentlyBlocks = await this.getSortedRecentlyProposedBlocks();
-    return recentlyBlocks[0]?.height || 0;
+    return recentlyBlocks[0];
   }
 
   private async getSortedRecentlyProposedBlocks() {

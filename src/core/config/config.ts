@@ -4,7 +4,7 @@ export const config: ConfigDto = {
   app: {
     mode: process.env.MODE!,
     host: process.env.HOST!,
-    port: process.env.PORT!,
+    port: +process.env.PORT!,
     token: process.env.TOKEN_NAME!,
     tokenDenom: process.env.TOKEN_DENOM!,
   },
