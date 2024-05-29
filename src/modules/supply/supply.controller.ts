@@ -38,6 +38,11 @@ export class SupplyController {
     return this.service.getSupplyChange(range);
   }
 
+  @Get(SupplyEndpoints.BURNT)
+  async getSupplyBurnt() {
+    return 0;
+  }
+
   @Get(SupplyEndpoints.GROWTH)
   async getSupplyGrowth(
     @Query(QueryParam.RANGE, new SchemaValidatePipe(GrowthRangeSchema))
