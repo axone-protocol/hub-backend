@@ -1,6 +1,6 @@
 import { RedisService } from "@core/lib/redis.service";
 import { Injectable } from "@nestjs/common";
-import { GovOverviewDto } from "./dto/gov-overview.dto";
+import { GovOverviewDto } from "../dto/gov-overview.dto";
 
 @Injectable()
 export class GovernanceCache {

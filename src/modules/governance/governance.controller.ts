@@ -1,5 +1,5 @@
 import { Controller, Get } from "@nestjs/common";
-import { GovernanceCache } from "./governance.cache";
+import { GovernanceCache } from "./services/governance.cache";
 import { GovernanceEndpoint } from "./enums/governance-endpoint.enum";
 import { Routes } from "@core/enums/routes.enum";
 

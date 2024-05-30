@@ -1,6 +1,6 @@
 import { Okp4Service } from "@core/lib/okp4/okp4.service";
 import { Injectable, OnModuleInit } from "@nestjs/common";
-import { GovOverviewDto } from "./dto/gov-overview.dto";
+import { GovOverviewDto } from "../dto/gov-overview.dto";
 import { Proposal } from "@core/lib/okp4/responses/get-proposals.response";
 import { ProposalStatusEnum } from "@core/lib/okp4/enums/proposal-status.enum";
 import { GovernanceCache } from "./governance.cache";
@@ -17,7 +17,7 @@ export class GovernanceService implements OnModuleInit {
     await this.fetchAndCacheGovOverview();
   }
 
-  private async fetchAndCacheGovOverview() {
+  async fetchAndCacheGovOverview() {
     try {
       const govResponse = await this.okp4Service.getGovParams();
       const govProposals = await this.okp4Service.getProposals();
