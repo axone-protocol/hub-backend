@@ -4,9 +4,8 @@ import { OnGatewayConnection, WebSocketGateway } from "@nestjs/websockets";
 import { Socket } from 'socket.io';
 import { SignatureDto } from "./dtos/signature.dto";
 import { StakingService } from "./services/staking.service";
-import { config } from "@core/config/config";
 
-@WebSocketGateway(config.app.port)
+@WebSocketGateway()
 export class StakingGateway implements OnGatewayConnection {
   private connections: Socket[] = [];
 
