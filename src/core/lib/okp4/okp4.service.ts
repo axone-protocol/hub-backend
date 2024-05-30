@@ -20,6 +20,9 @@ import { BlocksResponse } from "./responses/blocks.response";
 import { WebSocket } from 'ws';
 import { Log } from "@core/loggers/log";
 import { EventEmitter2 } from "@nestjs/event-emitter";
+import { GovType } from "./enums/gov-type.enum";
+import { GovParamsResponse } from "./responses/gov-params.response";
+import { GetProposalsResponse } from "./responses/get-proposals.response";
 
 @Injectable()
 export class Okp4Service {
@@ -170,6 +173,20 @@ export class Okp4Service {
         }
       }
     });
+  }
+
+  async getGovParams(type = GovType.VOTING): Promise<GovParamsResponse> {
+    return this.getWithErrorHandling(
+      this.constructUrl(
+        Endpoints.GOV_PARAMS.replace(RouteParam.PARAMS_TYPE, type)
+      )
+    );
+  }
+
+  async getProposals(): Promise<GetProposalsResponse> {
+    return this.getWithErrorHandling(
+      this.constructUrl(Endpoints.GOV_PROPOSALS)
+    );
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

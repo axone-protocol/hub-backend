@@ -5,6 +5,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { SupplyModule } from './supply/supply.module';
 import { StakingModule } from './staking/staking.module';
 import { TokenModule } from './token/token.module';
+import { GovernanceModule } from './governance/governance.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { TokenModule } from './token/token.module';
     TokenModule,
     SupplyModule,
     StakingModule,
+    GovernanceModule,
   ],
 })
 export class AppModule {}
