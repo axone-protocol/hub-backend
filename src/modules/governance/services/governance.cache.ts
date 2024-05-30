@@ -25,6 +25,6 @@ export class GovernanceCache {
   }
 
   private createRedisKey(...ids: string[]) {
-    return ids.reduce((acc, id) => acc + `_${id}`, `${this.governanceCachePrefix}`);
+    return `${this.governanceCachePrefix}${ids.map(id => `_${id}`).join('')}`
   }
 }

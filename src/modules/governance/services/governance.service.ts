@@ -44,14 +44,16 @@ export class GovernanceService implements OnModuleInit {
     ];
     return proposals.reduce((acc, val) => {
       if (activeStatuses.includes(val.status)) {
-        acc += 1;
+        let count = acc;
+        count += 1;
+        return count;
       }
       return acc;
     }, 0)
   }
 
   private votingPeriodToView(votingPeriod: string) {
-    const totalSeconds = parseInt(votingPeriod.slice(0, -1), 10);
+    const totalSeconds = Number.parseInt(votingPeriod.slice(0, -1), 10);
     
     const days = totalSeconds / 86400;
     
