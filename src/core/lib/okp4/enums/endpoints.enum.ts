@@ -11,4 +11,5 @@ export enum Endpoints {
   BLOCKS_BY_HEIGHT = 'cosmos/base/tendermint/v1beta1/blocks/:height',
   GOV_PARAMS = 'cosmos/gov/v1/params/:params_type',
   GOV_PROPOSALS = 'cosmos/gov/v1/proposals',
+  GOV_PROPOSAL = 'cosmos/gov/v1/proposals/:proposal_id',
 }

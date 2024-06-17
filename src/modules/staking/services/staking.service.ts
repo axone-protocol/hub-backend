@@ -218,7 +218,7 @@ export class StakingService implements OnModuleInit {
       delegation: rez[0],
       earnings: rez[1],
     };
-    
+
     await this.cache.setValidatorDelegation(payload.address, payload.validatorAddress, dto);
 
     return dto;
@@ -288,7 +288,7 @@ export class StakingService implements OnModuleInit {
       Log.warn("New block error " + e.message);
     }
   }
-  
+
   private async cacheBlock(res: BlocksResponse) {
     try {
       await this.cache.setRecentlyProposedBlock({
@@ -366,7 +366,7 @@ export class StakingService implements OnModuleInit {
     }
     return Big(blocks.length).div(signed).toNumber();
   }
-  
+
   async getValidatorUptime(address: string) {
     const signatures = await this.getSortedValidatorSignatures(address);
     const current = await this.getLastBlockHeight();
@@ -398,7 +398,7 @@ export class StakingService implements OnModuleInit {
   private async getSortedRecentlyProposedBlocks() {
     try {
       const recentlyBlocks: RecentlyProposedBlockDto[] = await this.cache.getRecentlyProposedBlock();
-      return recentlyBlocks.sort((a, b) => Number.parseFloat(b.height) - Number.parseFloat(a.height)); 
+      return recentlyBlocks.sort((a, b) => Number.parseFloat(b.height) - Number.parseFloat(a.height));
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch(e: any) {
       Log.warn("Cache recently proposed blocks deserialization error " + e.message);
@@ -419,5 +419,37 @@ export class StakingService implements OnModuleInit {
     }
 
     return [];
+  }
+
+  private async fetchProposals() {
+    const proposals = await this.okp4Service.getProposals();
+    await this.cache.setProposals(proposals);
+    return proposals;
+  }
+
+  async getProposals() {
+    const cache = await this.cache.getProposals();
+
+    if (cache === null) {
+      return this.fetchProposals();
+    }
+
+    return cache;
+  }
+
+  private async fetchProposal(proposalId: string | number) {
+    const proposal = await this.okp4Service.getProposal(proposalId);
+    await this.cache.setProposal(proposalId, proposal);
+    return proposal;
+  }
+
+  async getProposal(proposalId: string | number) {
+    const cache = await this.cache.getProposal(proposalId);
+
+    if (cache === null) {
+      return this.fetchProposal(proposalId);
+    }
+
+    return cache;
   }
 }

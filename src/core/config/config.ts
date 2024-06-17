@@ -25,6 +25,8 @@ export const config: ConfigDto = {
     validators: +process.env.STAKING_VALIDATORS!,
     validatorDelegation: +process.env.STAKING_VALIDATOR_DELEGATION!,
     validatorSignature: +process.env.VALIDATOR_SIGNATURE!,
+    proposals: +process.env.PROPOSALS_CACHE_TTL!,
+    proposal: +process.env.PROPOSAL_CACHE_TTL!,
   },
   keybase: {
     url: process.env.KEYBASE_URL!,
