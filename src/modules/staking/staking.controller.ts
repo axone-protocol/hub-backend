@@ -74,13 +74,13 @@ export class StakingController {
 
   @Get(StakingEndpoints.PROPOSALS)
   async getProposals() {
-      return this.service.getProposals();
+    return this.service.getProposals();
   }
 
   @Get(StakingEndpoints.PROPOSAL)
   async getProposal(
       @Param(QueryParam.PROPOSAL_ID, new SchemaValidatePipe(StringSchema))
-          proposalId: string,
+        proposalId: string,
   ) {
     return this.service.getProposal(proposalId);
   }
