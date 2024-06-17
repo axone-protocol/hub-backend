@@ -10,8 +10,8 @@ import { Log } from "@core/loggers/log";
 export class GovernanceService implements OnModuleInit {
   constructor(
     private readonly okp4Service: Okp4Service,
-    private readonly cache: GovernanceCache,
-  ) { }
+    private readonly cache: GovernanceCache
+  ) {}
 
   async onModuleInit() {
     await this.fetchAndCacheGovOverview();
@@ -21,16 +21,18 @@ export class GovernanceService implements OnModuleInit {
     try {
       const govResponse = await this.okp4Service.getGovParams();
       const govProposals = await this.okp4Service.getProposals();
-  
+
       const govOverview: GovOverviewDto = {
         totalProposals: Number.parseInt(govProposals.pagination.total),
         currentProposals: this.currentProposals(govProposals.proposals),
-        votingPeriod: this.votingPeriodToView(govResponse.voting_params.voting_period),
-        depositRequired: govResponse?.params?.min_deposit[0]?.amount || '0',
-      }
+        votingPeriod: this.votingPeriodToView(
+          govResponse.voting_params.voting_period
+        ),
+        depositRequired: govResponse?.params?.min_deposit[0]?.amount || "0",
+      };
 
       this.cache.setGovOverview(govOverview);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       Log.warn("Failed to fetch and cache gov overview " + e.message);
     }
@@ -49,14 +51,14 @@ export class GovernanceService implements OnModuleInit {
         return count;
       }
       return acc;
-    }, 0)
+    }, 0);
   }
 
   private votingPeriodToView(votingPeriod: string) {
     const totalSeconds = Number.parseInt(votingPeriod.slice(0, -1), 10);
-    
+
     const days = totalSeconds / 86400;
-    
-    return `${Number.isInteger(days) ? days : days.toFixed(1)} D`;
+
+    return `${Number.isInteger(days) ? days : days.toFixed(1)}`;
   }
 }
