@@ -14,75 +14,81 @@ import { SpendableBalancesResponse } from "./responses/spendable-balances.respon
 import { SupplyResponse } from "./responses/supply.response";
 import { ValidatorStatus } from "./enums/validator-status.enum";
 import { ValidatorDelegationsResponse } from "./responses/validator-delegations.response";
-import { fromBase64, toBase64, fromHex, toHex } from '@cosmjs/encoding';
-import { sha256 } from '@cosmjs/crypto';
+import { fromBase64, toBase64, fromHex, toHex } from "@cosmjs/encoding";
+import { sha256 } from "@cosmjs/crypto";
 import { BlocksResponse } from "./responses/blocks.response";
-import { WebSocket } from 'ws';
+import { WebSocket } from "ws";
 import { Log } from "@core/loggers/log";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { GovType } from "./enums/gov-type.enum";
 import { GovParamsResponse } from "./responses/gov-params.response";
 import { GetProposalsResponse } from "./responses/get-proposals.response";
+import { GetProposalResponse } from "@core/lib/okp4/responses/get-proposal.response";
 
 @Injectable()
 export class Okp4Service {
   private BASE_URL = config.okp4.url;
-  
+
   constructor(
-    private readonly httpService: HttpService,
-    private eventEmitter: EventEmitter2,
-  ) { }
+        private readonly httpService: HttpService,
+        private eventEmitter: EventEmitter2
+  ) {}
 
   private constructUrl(endpoint: string, params?: string): string {
-    return `${this.BASE_URL}/${endpoint}${params ? `?${params}` : ''}`;
+    return `${this.BASE_URL}/${endpoint}${params ? `?${params}` : ""}`;
   }
 
   private getWithErrorHandling<T>(url: string): Promise<T> {
-    return this.errorHandleWrapper(
-      this.httpService.get.bind(
-        null,
-        url,
-      ),
-    );
+    return this.errorHandleWrapper(this.httpService.get.bind(null, url));
   }
 
   async getSupplyByDenom(denom: string): Promise<SupplyByDenomResponse> {
     return this.getWithErrorHandling(
       this.constructUrl(
         Endpoints.SUPPLY_BY_DENOM,
-        createUrlParams({ denom }),
+        createUrlParams({ denom })
       )
     );
   }
-  
+
   async getDelegations(addr: string): Promise<GetDelegationsResponse> {
-    return this.getWithErrorHandling(this.constructUrl(`${Endpoints.STAKING_DELEGATIONS}/${addr}`));
+    return this.getWithErrorHandling(
+      this.constructUrl(`${Endpoints.STAKING_DELEGATIONS}/${addr}`)
+    );
   }
 
-  async getDelegatorsValidators(addr: string): Promise<DelegatorValidatorsResponse> {
+  async getDelegatorsValidators(
+    addr: string
+  ): Promise<DelegatorValidatorsResponse> {
     return this.getWithErrorHandling(
       this.constructUrl(
         Endpoints.DELEGATORS_VALIDATORS.replace(
           RouteParam.DELEGATOR_ADDRES,
-          addr,
+          addr
         )
       )
     );
   }
 
-  async getDelegatorsRewards(addr: string): Promise<DelegatorsRewardsResponse> {
+  async getDelegatorsRewards(
+    addr: string
+  ): Promise<DelegatorsRewardsResponse> {
     return this.getWithErrorHandling(
       this.constructUrl(
         Endpoints.DELEGATORS_REWARDS.replace(
           RouteParam.DELEGATOR_ADDRES,
-          addr,
+          addr
         )
       )
     );
   }
 
-  async getSpendableBalances(addr: string): Promise<SpendableBalancesResponse> {
-    return this.getWithErrorHandling(this.constructUrl(`${Endpoints.SPENDABLE_BALANCE}/${addr}`));
+  async getSpendableBalances(
+    addr: string
+  ): Promise<SpendableBalancesResponse> {
+    return this.getWithErrorHandling(
+      this.constructUrl(`${Endpoints.SPENDABLE_BALANCE}/${addr}`)
+    );
   }
 
   async getBondValidators() {
@@ -94,34 +100,33 @@ export class Okp4Service {
     if (status) {
       params = createUrlParams({ status });
     }
-    const url = this.constructUrl(
-      Endpoints.VALIDATORS,
-      params,
-    );
+    const url = this.constructUrl(Endpoints.VALIDATORS, params);
     return this.getWithErrorHandling(url);
   }
 
   async getTotalSupply(): Promise<SupplyResponse> {
-    const url = this.constructUrl(
-      Endpoints.TOTAL_SUPPLY,
-    );
+    const url = this.constructUrl(Endpoints.TOTAL_SUPPLY);
     return this.getWithErrorHandling(url);
   }
 
-  async getValidatorDelegations(validatorAddr: string, limit?: number, offset?: number): Promise<ValidatorDelegationsResponse> {
+  async getValidatorDelegations(
+    validatorAddr: string,
+    limit?: number,
+    offset?: number
+  ): Promise<ValidatorDelegationsResponse> {
     let params = undefined;
     if (limit && offset) {
       params = createUrlParams({
-        'pagination.offset': offset.toString(),
-        'pagination.limit': limit.toString(),
-        'pagination.count_total': true.toString()
-      })
+        "pagination.offset": offset.toString(),
+        "pagination.limit": limit.toString(),
+        "pagination.count_total": true.toString(),
+      });
     }
     return this.getWithErrorHandling(
       this.constructUrl(
         Endpoints.VALIDATOR_DELEGATIONS.replace(
           RouteParam.VALIDATOR_ADDRES,
-          validatorAddr,
+          validatorAddr
         ),
         params
       )
@@ -130,20 +135,25 @@ export class Okp4Service {
 
   async getLatestBlocks(): Promise<BlocksResponse> {
     return this.getWithErrorHandling(
-      this.constructUrl(Endpoints.BLOCKS_LATEST),
-    )
+      this.constructUrl(Endpoints.BLOCKS_LATEST)
+    );
   }
 
-  async getBlocksByHeight(height: number): Promise<BlocksResponse>  {
+  async getBlocksByHeight(height: number): Promise<BlocksResponse> {
     return this.getWithErrorHandling(
       this.constructUrl(
-        Endpoints.BLOCKS_BY_HEIGHT.replace(RouteParam.HEIGHT, height.toString())
+        Endpoints.BLOCKS_BY_HEIGHT.replace(
+          RouteParam.HEIGHT,
+          height.toString()
+        )
       )
-    )
+    );
   }
 
   apiPubkeyToAddr(pubkey: string) {
-    return toBase64(fromHex(toHex(sha256(fromBase64(pubkey))).slice(0, 40)))
+    return toBase64(
+      fromHex(toHex(sha256(fromBase64(pubkey))).slice(0, 40))
+    );
   }
 
   wssPubkeyToAddr(pubkey: string) {
@@ -152,24 +162,37 @@ export class Okp4Service {
 
   async connectToNewBlockSocket(event: string) {
     const client = new WebSocket(config.okp4.wss);
-    client.on('open', () => {
-      client.send(JSON.stringify({"jsonrpc":"2.0","method":"subscribe","id":0,"params":{"query":"tm.event='NewBlock'"}}));
+    client.on("open", () => {
+      client.send(
+        JSON.stringify({
+          jsonrpc: "2.0",
+          method: "subscribe",
+          id: 0,
+          params: { query: "tm.event='NewBlock'" },
+        })
+      );
     });
-    client.on('message', (data) => {
+    client.on("message", (data) => {
       if (Buffer.isBuffer(data)) {
-        const message = data.toString('utf-8');
+        const message = data.toString("utf-8");
         try {
           const jsonData = JSON.parse(message);
           if (
             jsonData &&
-            jsonData?.result &&
-            jsonData?.result?.query === "tm.event='NewBlock'"
+                        jsonData?.result &&
+                        jsonData?.result?.query === "tm.event='NewBlock'"
           ) {
-            this.eventEmitter.emit(event, jsonData?.result?.data?.value);
+            this.eventEmitter.emit(
+              event,
+              jsonData?.result?.data?.value
+            );
           }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
-          Log.warn('[OKP4] Problem with parsing data from wss\n' + e.message);
+          Log.warn(
+            "[OKP4] Problem with parsing data from wss\n" +
+                            e.message
+          );
         }
       }
     });
@@ -189,15 +212,28 @@ export class Okp4Service {
     );
   }
 
+  async getProposal(
+    proposalId: string | number
+  ): Promise<GetProposalResponse> {
+    return this.getWithErrorHandling(
+      this.constructUrl(
+        Endpoints.GOV_PROPOSAL.replace(
+          RouteParam.PROPOSAL_ID,
+          String(proposalId)
+        )
+      )
+    );
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async errorHandleWrapper<T>(fn: any): Promise<T> {
     try {
       const response: GSFResponse<T> = await fn();
-    
+
       if (this.isFailedResponse(response)) {
         throw new BadRequestException(response.message);
       }
-    
+
       return response as T;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
@@ -205,7 +241,9 @@ export class Okp4Service {
     }
   }
 
-  private isFailedResponse<T>(response: GSFResponse<T>): response is FailedResponse {
+  private isFailedResponse<T>(
+    response: GSFResponse<T>
+  ): response is FailedResponse {
     return (response as FailedResponse).message !== undefined;
   }
 }

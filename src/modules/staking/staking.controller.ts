@@ -16,7 +16,7 @@ export class StakingController {
   constructor(
     private readonly service: StakingService,
   ) { }
-    
+
   @Get(StakingEndpoints.MY_OVERVIEW)
   async getMyStakedOverview(
     @Query(QueryParam.ADDRESS, new SchemaValidatePipe(AddressSchema))
@@ -70,5 +70,18 @@ export class StakingController {
   @Get(StakingEndpoints.VALIDATORS_RECENTLY_PROPOSED_BLOCKS)
   async getValidatorRecentlyProposedBlocks() {
     return this.service.getValidatorRecentlyProposedBlocks();
+  }
+
+  @Get(StakingEndpoints.PROPOSALS)
+  async getProposals() {
+    return this.service.getProposals();
+  }
+
+  @Get(StakingEndpoints.PROPOSAL)
+  async getProposal(
+      @Param(QueryParam.PROPOSAL_ID, new SchemaValidatePipe(StringSchema))
+        proposalId: string,
+  ) {
+    return this.service.getProposal(proposalId);
   }
 }

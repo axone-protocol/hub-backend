@@ -35,6 +35,8 @@ export interface CacheConfig {
   validators: number;
   validatorDelegation: number;
   validatorSignature: number;
+  proposals: number;
+  proposal: number;
 }
 
 export interface KeybaseConfig {

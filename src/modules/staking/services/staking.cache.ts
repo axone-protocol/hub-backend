@@ -4,6 +4,8 @@ import { createHash } from 'crypto';
 import { StakingCachePrefix } from "../enums/staking-cache-prefix.enum";
 import { RedisService } from "@core/lib/redis.service";
 import { v4 } from 'uuid';
+import { GetProposalsResponse } from "@core/lib/okp4/responses/get-proposals.response";
+import { GetProposalResponse } from "@core/lib/okp4/responses/get-proposal.response";
 
 @Injectable()
 export class StakingCache {
@@ -86,7 +88,7 @@ export class StakingCache {
     const pattern = this.createRedisKey(StakingCachePrefix.VALIDATOR_SIGNATURES, address, '*');
     const keys = await this.redisService.keys(pattern);
     const signatures = await Promise.all(keys.map((key: string) => this.redisService.get(key)));
-    
+
     return signatures.map(signature => JSON.parse(signature!));
   }
 
@@ -99,11 +101,29 @@ export class StakingCache {
     const pattern = this.createRedisKey(StakingCachePrefix.VALIDATOR_RECENTLY_PROPOSED_BLOCKS, '*');
     const keys = await this.redisService.keys(pattern);
     const recentlyProposedBlocks = await Promise.all(keys.map((key: string) => this.redisService.get(key)));
-    
+
     return recentlyProposedBlocks.map(block => JSON.parse(block!));
   }
 
   private createRedisKey(...ids: string[]) {
     return ids.reduce((acc, id) => acc + `_${id}`, `${StakingCachePrefix.STAKING}`);
+  }
+
+  async setProposals(proposals: GetProposalsResponse) {
+    const serialized = JSON.stringify(proposals);
+    await this.redisService.setWithTTL(this.createRedisKey(StakingCachePrefix.PROPOSALS), serialized, config.cache.proposals);
+  }
+
+  async getProposals(): Promise<GetProposalsResponse> {
+    return this.getObjByRedisKey(this.createRedisKey(StakingCachePrefix.PROPOSALS));
+  }
+
+  async setProposal(proposalId: string | number, proposal: GetProposalResponse) {
+    const serialized = JSON.stringify(proposal);
+    await this.redisService.setWithTTL(this.createRedisKey(StakingCachePrefix.PROPOSAL, String(proposalId)), serialized, config.cache.proposal);
+  }
+
+  async getProposal(proposalId: string | number): Promise<GetProposalResponse> {
+    return this.getObjByRedisKey(this.createRedisKey(StakingCachePrefix.PROPOSAL, String(proposalId)));
   }
 }
