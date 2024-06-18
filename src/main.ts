@@ -19,6 +19,5 @@ import '@utils/config-loader';
   await app.listen(config.app.port, config.app.host);
 
   await showAvailableRoutes(app);
-
-  Log.success(`${config.app.host}:${config.app.port}`);
+  Log.success(`Application is running on: ${await app.getUrl()}`);
 })().catch(AppExceptionsFilter.catch);

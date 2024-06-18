@@ -68,8 +68,11 @@ export class StakingController {
   }
 
   @Get(StakingEndpoints.VALIDATORS_RECENTLY_PROPOSED_BLOCKS)
-  async getValidatorRecentlyProposedBlocks() {
-    return this.service.getValidatorRecentlyProposedBlocks();
+  async getValidatorRecentlyProposedBlocks(
+    @Param(QueryParam.ADDRESS, new SchemaValidatePipe(StringSchema))
+      address: string,
+  ) {
+    return this.service.getValidatorRecentlyProposedBlocks(address);
   }
 
   @Get(StakingEndpoints.PROPOSALS)
