@@ -28,6 +28,7 @@ import { toPercents } from "@utils/to-percents";
 import { RecentlyProposedBlockDto } from "../dtos/recently-proposed-block.dto";
 import { SignatureDto } from "../dtos/signature.dto";
 import { SignatureViewStatus } from "../enums/signature-view-status.enum";
+import { Reward } from "@core/lib/okp4/responses/delegators-rewards.response";
 
 @Injectable()
 export class StakingService implements OnModuleInit {
@@ -85,18 +86,16 @@ export class StakingService implements OnModuleInit {
     validatorAddress?: string
   ) {
     const res = await this.okp4Service.getDelegations(address);
-    return res.delegation_responses
-      .reduce((acc, val) => {
-        if (
-          validatorAddress &&
-          val.delegation.validator_address !== validatorAddress
-        ) {
-          return acc;
-        }
-
-        return acc + +val.balance.amount;
-      }, 0)
-      .toString();
+    const filteredResponses = validatorAddress
+      ? res.delegation_responses.filter(
+        (val) => val.delegation.validator_address === validatorAddress
+      )
+      : res.delegation_responses;
+    const totalAmount = filteredResponses.reduce(
+      (acc, val) => acc + +val.balance.amount,
+      0
+    );
+    return totalAmount.toString();
   }
 
   private async fetchDelegatorsValidatorsAmount(address: string) {
@@ -109,20 +108,28 @@ export class StakingService implements OnModuleInit {
     validatorAddress?: string
   ) {
     const res = await this.okp4Service.getDelegatorsRewards(address);
-    return res.rewards
-      .reduce((acc, val) => {
-        if (validatorAddress && val.validator_address !== validatorAddress) {
-          return acc;
-        }
-        return (
+    const totalRewards = this.calculateRewardForValidator(
+      res.rewards,
+      validatorAddress
+    );
+    return totalRewards.toString();
+  }
+
+  private calculateRewardForValidator(
+    rewards: Reward[],
+    validatorAddress?: string
+  ) {
+    return rewards
+      .filter((val) => val.validator_address === validatorAddress)
+      .reduce(
+        (acc, val) =>
           acc +
           +(
             val.reward.find(({ denom }) => config.app.tokenDenom === denom)
               ?.amount || 0
-          )
-        );
-      }, 0)
-      .toString();
+          ),
+        0
+      );
   }
 
   private async fetchAvailableBalance(address: string) {
@@ -468,7 +475,7 @@ export class StakingService implements OnModuleInit {
       }
       return acc;
     }, 0);
-    if (!blocks || blocks.length === 0 || !signed) {
+    if (!blocks?.length || !signed) {
       return 0;
     }
     return Big(blocks.length).div(signed).toNumber();
@@ -496,7 +503,7 @@ export class StakingService implements OnModuleInit {
 
   private async getLastBlockHeight() {
     const lastBlock = await this.cache.getLastBlock();
-    return (lastBlock && lastBlock?.height) || 0;
+    return lastBlock?.height || 0;
   }
 
   private async getSortedRecentlyProposedBlocks(address: string) {
