@@ -1,6 +1,7 @@
 # IDE
 .idea
 .vscode
+.editorconfig
 
 # dependencies
 /node_modules
