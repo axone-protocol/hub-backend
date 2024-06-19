@@ -161,7 +161,7 @@ export class StakingService implements OnModuleInit {
 
     const dto: GlobalStakedOverviewDto = {
       totalValidators: rez[0].pagination.total,
-      apr: rez[1].toString(),
+      apr: rez[1],
       totalStaked,
       bondedTokens: Big(totalStaked).div(rez[2]!.amount).toString(),
     };
