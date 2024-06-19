@@ -155,6 +155,7 @@ export class StakingService implements OnModuleInit {
       this.okp4Service.getBondValidators(),
       this.osmosisService.getStakingApr(),
       this.fetchTotalSupply(),
+      this.okp4Service.getStakingPool(),
     ]);
 
     const totalStaked = this.calculateTotalStaked(rez[0].validators);
@@ -163,7 +164,7 @@ export class StakingService implements OnModuleInit {
       totalValidators: rez[0].pagination.total,
       apr: rez[1],
       totalStaked,
-      bondedTokens: Big(totalStaked).div(rez[2]!.amount).toString(),
+      bondedTokens: Big(rez[3].pool.bonded_tokens).div(rez[2]!.amount).toString(),
     };
 
     await this.cache.setGlobalStakedOverview(dto);

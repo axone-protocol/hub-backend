@@ -12,4 +12,5 @@ export enum Endpoints {
   GOV_PARAMS = 'cosmos/gov/v1/params/:params_type',
   GOV_PROPOSALS = 'cosmos/gov/v1/proposals',
   GOV_PROPOSAL = 'cosmos/gov/v1/proposals/:proposal_id',
+  STAKING_POOL = 'cosmos/staking/v1beta1/pool',
 }
