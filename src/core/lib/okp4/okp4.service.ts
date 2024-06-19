@@ -12,7 +12,6 @@ import { DelegatorValidatorsResponse } from "./responses/delegators-validators.r
 import { DelegatorsRewardsResponse } from "./responses/delegators-rewards.response";
 import { SpendableBalancesResponse } from "./responses/spendable-balances.response";
 import { SupplyResponse } from "./responses/supply.response";
-import { ValidatorStatus } from "./enums/validator-status.enum";
 import { ValidatorDelegationsResponse } from "./responses/validator-delegations.response";
 import { fromBase64, toBase64, fromHex, toHex } from "@cosmjs/encoding";
 import { sha256 } from "@cosmjs/crypto";
@@ -24,6 +23,8 @@ import { GovType } from "./enums/gov-type.enum";
 import { GovParamsResponse } from "./responses/gov-params.response";
 import { GetProposalsResponse } from "./responses/get-proposals.response";
 import { GetProposalResponse } from "@core/lib/okp4/responses/get-proposal.response";
+import { StakingPoolResponse } from "./responses/staking-pool.response";
+import { ValidatorStatus } from "./enums/validator-status.enum";
 
 @Injectable()
 export class Okp4Service {
@@ -239,5 +240,9 @@ export class Okp4Service {
     response: GSFResponse<T>
   ): response is FailedResponse {
     return (response as FailedResponse).message !== undefined;
+  }
+
+  async getStakingPool(): Promise<StakingPoolResponse> {
+    return this.getWithErrorHandling(this.constructUrl(Endpoints.STAKING_POOL));
   }
 }
