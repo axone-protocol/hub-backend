@@ -92,17 +92,31 @@ export class StakingCache {
     return signatures.map(signature => JSON.parse(signature!));
   }
 
-  async setRecentlyProposedBlock(block: unknown) {
-    const key = this.createRedisKey(StakingCachePrefix.VALIDATOR_RECENTLY_PROPOSED_BLOCKS, v4());
+  async setRecentlyProposedBlock(address: string, block: unknown) {
+    const key = this.createRedisKey(this.createRedisKey(StakingCachePrefix.VALIDATOR_RECENTLY_PROPOSED_BLOCKS, address), v4());
     this.redisService.setWithTTL(key, JSON.stringify(block), config.cache.validatorSignature);
   }
 
-  async getRecentlyProposedBlock() {
-    const pattern = this.createRedisKey(StakingCachePrefix.VALIDATOR_RECENTLY_PROPOSED_BLOCKS, '*');
+  async getRecentlyProposedBlock(address: string) {
+    const pattern = this.createRedisKey(this.createRedisKey(StakingCachePrefix.VALIDATOR_RECENTLY_PROPOSED_BLOCKS, address), '*');
     const keys = await this.redisService.keys(pattern);
     const recentlyProposedBlocks = await Promise.all(keys.map((key: string) => this.redisService.get(key)));
 
     return recentlyProposedBlocks.map(block => JSON.parse(block!));
+  }
+
+  async setLastBlock(block: unknown) {
+    this.redisService.set(this.createRedisKey(StakingCachePrefix.LAST_BLOCK), JSON.stringify(block));
+  }
+
+  async getLastBlock() {
+    const serialized = await this.redisService.get(this.createRedisKey(StakingCachePrefix.LAST_BLOCK));
+
+    if (!serialized) {
+      return null;
+    }
+
+    return JSON.parse(serialized as string);
   }
 
   private createRedisKey(...ids: string[]) {
