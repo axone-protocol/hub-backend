@@ -3,4 +3,5 @@ export enum SupplyEndpoints {
   CHANGE = '/change',
   BURNT = '/burnt',
   GROWTH = '/growth',
+  CHARTS = '/charts',
 }
