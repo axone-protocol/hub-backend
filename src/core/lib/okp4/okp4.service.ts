@@ -148,13 +148,6 @@ export class Okp4Service {
   }
 
   async connectToNewBlockSocket(event: string) {
-    if (this.socket) {
-      this.socket.onopen = null;
-      this.socket.onclose = null;
-      this.socket.onerror = null;
-      this.socket.onmessage = null;
-    }
-
     this.socket = new WebSocket(config.okp4.wss);
 
     this.socket.on("open", () => {
@@ -197,7 +190,7 @@ export class Okp4Service {
       `Okp4 Socket Connection closed, reconnect attempt: ${this.reconnectAttempts}`
     );
     this.reconnectAttempts++;
-    const timeout = Math.min(10000, 1000 * Math.pow(2, this.reconnectAttempts)); // Cap at 10 seconds
+    const timeout = Math.min(10000, 1000 * 2 ** this.reconnectAttempts); // Cap at 10 seconds
     setTimeout(this.connectToNewBlockSocket.bind(this, event), timeout);
   }
 
