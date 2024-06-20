@@ -120,7 +120,9 @@ export class StakingService implements OnModuleInit {
     validatorAddress?: string
   ) {
     return rewards
-      .filter((val) => val.validator_address === validatorAddress)
+      .filter((val) =>
+        validatorAddress ? val.validator_address === validatorAddress : true
+      )
       .reduce(
         (acc, val) =>
           acc +
@@ -164,7 +166,10 @@ export class StakingService implements OnModuleInit {
       totalValidators: rez[0].pagination.total,
       apr: rez[1],
       totalStaked,
-      bondedTokens: Big(rez[3].pool.bonded_tokens).div(rez[2]!.amount).toString(),
+      bondedTokens: Big(rez[3].pool.bonded_tokens)
+        .div(rez[2]!.amount)
+        .mul(100)
+        .toString(),
     };
 
     await this.cache.setGlobalStakedOverview(dto);
