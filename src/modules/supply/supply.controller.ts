@@ -8,7 +8,7 @@ import { HistoricalRangeSchema } from "./schemas/historical-range.schema";
 import { SupplyService } from "./services/supply.service";
 import { ChangeRangeSchema } from "./schemas/change-range.schema";
 import { Range } from "@core/enums/range.enum";
-import { GrowthRangeSchema } from "./schemas/growth-range.schema";
+import { ChartsRangeSchema } from "./schemas/charts-range.schema";
 
 @Controller(Routes.SUPPLY)
 export class SupplyController {
@@ -16,11 +16,11 @@ export class SupplyController {
     private readonly cache: SupplyCache,
     private readonly service: SupplyService,
   ) {}
-    
+
   @Get(SupplyEndpoints.HISTORICAL)
   async getHistoricalSupply(
     @Query(QueryParam.RANGE, new SchemaValidatePipe(HistoricalRangeSchema))
-      range: Range,
+      range: Range
   ) {
     return this.cache.getSupplyHistorical(range);
   }
@@ -33,21 +33,16 @@ export class SupplyController {
   @Get(SupplyEndpoints.CHANGE)
   async getSupplyChange(
     @Query(QueryParam.RANGE, new SchemaValidatePipe(ChangeRangeSchema))
-      range: Range,
+      range: Range
   ) {
     return this.service.getSupplyChange(range);
   }
 
-  @Get(SupplyEndpoints.BURNT)
-  async getSupplyBurnt() {
-    return 0;
-  }
-
-  @Get(SupplyEndpoints.GROWTH)
-  async getSupplyGrowth(
-    @Query(QueryParam.RANGE, new SchemaValidatePipe(GrowthRangeSchema))
-      range: Range,
+  @Get(SupplyEndpoints.CHARTS)
+  async getCharts(
+    @Query(QueryParam.RANGE, new SchemaValidatePipe(ChartsRangeSchema))
+      range: Range
   ) {
-    return this.service.getSupplyGrowth(range);
+    return this.service.getCharts(range);
   }
 }

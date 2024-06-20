@@ -184,4 +184,16 @@ export class SupplyService implements OnModuleInit {
 
     return 0;
   }
+
+  async getCharts(range: Range) {
+    const issuance = await this.getSupplyChange(range);
+    const growth = await this.getSupplyGrowth(range);
+    const burnt = 0;
+
+    return {
+      issuance,
+      growth,
+      burnt,
+    }
+  }
 }
