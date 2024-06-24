@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import * as Joi from "joi";
 
 export const ConfigSchema = Joi.object({
   MODE: Joi.string().required(),
@@ -18,4 +18,5 @@ export const ConfigSchema = Joi.object({
   KEYBASE_URL: Joi.string().required(),
   OKP4_WSS_URL: Joi.string().required(),
   VALIDATOR_SIGNATURE: Joi.number().required(),
+  SUPPLY_CHANGE_CACHE_TTL: Joi.number().required(),
 }).required();

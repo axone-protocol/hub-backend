@@ -1,4 +1,4 @@
-import { ConfigDto } from './config.dto';
+import { ConfigDto } from "./config.dto";
 
 export const config: ConfigDto = {
   app: {
@@ -17,7 +17,7 @@ export const config: ConfigDto = {
   },
   redis: {
     host: process.env.REDIS_HOST!,
-    port: +process.env.REDIS_PORT!
+    port: +process.env.REDIS_PORT!,
   },
   cache: {
     myStakingOverview: +process.env.MY_STAKING_OVERVIEW!,
@@ -27,8 +27,9 @@ export const config: ConfigDto = {
     validatorSignature: +process.env.VALIDATOR_SIGNATURE!,
     proposals: +process.env.PROPOSALS_CACHE_TTL!,
     proposal: +process.env.PROPOSAL_CACHE_TTL!,
+    supplyChange: +process.env.SUPPLY_CHANGE_CACHE_TTL!,
   },
   keybase: {
     url: process.env.KEYBASE_URL!,
-  }
+  },
 };
