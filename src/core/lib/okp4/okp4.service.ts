@@ -263,7 +263,7 @@ export class Okp4Service {
       StakingPoolResponse
     ];
 
-    if (res[2] && res[2].pool.bonded_tokens) {
+    if (res[2]?.pool?.bonded_tokens) {
       Big(res[0].inflation)
         .mul(Big(1).minus(res[1].params.community_tax))
         .div(res[2].pool.bonded_tokens)
