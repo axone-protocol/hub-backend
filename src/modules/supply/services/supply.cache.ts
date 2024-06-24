@@ -3,10 +3,12 @@ import { Injectable } from "@nestjs/common";
 import { ChangeIntervalDto } from "../dtos/change-interval.dto";
 import { Range } from "@core/enums/range.enum";
 import { RedisService } from "@core/lib/redis.service";
+import { config } from "@core/config/config";
 
 @Injectable()
 export class SupplyCache {
   private redisSupplyPrefix = 'supply';
+  private changePrefix = 'change';
   
   constructor(
     private readonly redisService: RedisService,
@@ -21,7 +23,21 @@ export class SupplyCache {
     this.redisService.set(this.createRedisKey(range), JSON.stringify(data));
   }
 
-  private createRedisKey(range: Range) {
-    return `${this.redisSupplyPrefix}_${range}`;
+  async setSupplyChange(range: Range, data: unknown) {
+    this.redisService.setWithTTL(this.createRedisKey(this.changePrefix, range), JSON.stringify(data), config.cache.supplyChange);
+  }
+
+  async getSupplyChange(range: Range) {
+    const serialized = await this.redisService.get(this.createRedisKey(this.changePrefix, range));
+
+    if (!serialized) {
+      return null;
+    }
+
+    return JSON.parse(serialized as string);
+  }
+
+  private createRedisKey(...ids: string[]) {
+    return ids.reduce((acc, id) => acc + `_${id}`, `${this.redisSupplyPrefix}`);
   }
 }

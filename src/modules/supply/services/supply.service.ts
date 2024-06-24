@@ -127,9 +127,34 @@ export class SupplyService implements OnModuleInit {
   }
 
   async getSupplyChange(range: Range) {
+    const cache = await this.cache.getSupplyChange(range);
+
+    if(cache === null) {
+      return this.cacheSupplyChange(range);
+    }
+
+    return cache;
+  }
+
+  private async cacheSupplyChange(range: Range) {
     const previousSupply = await this.getPastSupplyByRange(range);
     const currentSupply = await this.getSupplyByOrder();
-    if (previousSupply && currentSupply) return Big(currentSupply.supply).minus(previousSupply.supply);
+    const supplyChange = {
+      time: new Date(),
+      change: 0,
+      burnt: 0,
+      issuance: 0,
+    };
+
+    if (previousSupply && currentSupply) {
+      supplyChange.time = currentSupply.time;
+      supplyChange.change = Big(currentSupply.supply).minus(previousSupply.supply).toNumber();
+      supplyChange.issuance = supplyChange.change;
+    }
+
+    await this.cache.setSupplyChange(range, supplyChange);
+
+    return supplyChange;
   }
 
   private async getPastSupplyByRange(range: Range) {
