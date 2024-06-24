@@ -4,7 +4,6 @@ import { BadRequestException, Injectable, OnModuleInit } from "@nestjs/common";
 import { StakingCache } from "./staking.cache";
 import { config } from "@core/config/config";
 import { MyStakedOverviewDto } from "../dtos/my-staked-overview.dto";
-import { OsmosisService } from "@core/lib/osmosis/osmosis.service";
 import { Validator } from "@core/lib/okp4/responses/delegators-validators.response";
 import Big from "big.js";
 import { GlobalStakedOverviewDto } from "../dtos/global-staked-overview.dto";
@@ -35,7 +34,6 @@ export class StakingService implements OnModuleInit {
   constructor(
     private readonly okp4Service: Okp4Service,
     private readonly cache: StakingCache,
-    private readonly osmosisService: OsmosisService,
     private readonly keybaseService: KeybaseService,
     private eventEmitter: EventEmitter2
   ) {}
@@ -155,7 +153,7 @@ export class StakingService implements OnModuleInit {
   private async fetchAndCacheGlobalStakedOverview(): Promise<GlobalStakedOverviewDto> {
     const rez = await Promise.all([
       this.okp4Service.getBondValidators(),
-      this.osmosisService.getStakingApr(),
+      this.okp4Service.getApr(),
       this.fetchTotalSupply(),
       this.okp4Service.getStakingPool(),
     ]);

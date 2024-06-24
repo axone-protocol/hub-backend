@@ -16,6 +16,7 @@ import {
 import { HistoricalPrice } from "../dtos/historical-price.dto";
 import { TimeBucketDto } from "../dtos/time-bucket.dto";
 import { Log } from "@core/loggers/log";
+import { Okp4Service } from "@core/lib/okp4/okp4.service";
 
 @Injectable()
 export class TokenService implements OnModuleInit {
@@ -23,6 +24,7 @@ export class TokenService implements OnModuleInit {
 
   constructor(
     private readonly osmosisService: OsmosisService,
+    private readonly okp4Service: Okp4Service,
     private readonly cache: TokenCache,
     private readonly prismaService: PrismaService
   ) {
@@ -95,7 +97,7 @@ export class TokenService implements OnModuleInit {
   async fetchAndCacheTokenInfo() {
     const res = (await this.osmosisService.getTokenInfo(config.app.token))[0];
     const mcap = await this.getMcapByOrder();
-    const apr = await this.osmosisService.getStakingApr();
+    const apr = await this.okp4Service.getApr();
 
     const tokenInfoDto: TokenInfoDto = {
       price: {
