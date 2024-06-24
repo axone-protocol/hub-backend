@@ -25,6 +25,9 @@ import { GetProposalsResponse } from "./responses/get-proposals.response";
 import { GetProposalResponse } from "@core/lib/okp4/responses/get-proposal.response";
 import { StakingPoolResponse } from "./responses/staking-pool.response";
 import { ValidatorStatus } from "./enums/validator-status.enum";
+import { InflationResponse } from "./responses/inflation.response";
+import { DistributionParamsResponse } from "./responses/distribution-params.response";
+import Big from "big.js";
 
 @Injectable()
 export class Okp4Service {
@@ -244,5 +247,28 @@ export class Okp4Service {
 
   async getStakingPool(): Promise<StakingPoolResponse> {
     return this.getWithErrorHandling(this.constructUrl(Endpoints.STAKING_POOL));
+  }
+
+  async getApr() {
+    const promises = [
+      this.getWithErrorHandling(this.constructUrl(Endpoints.INFLATION)),
+      this.getWithErrorHandling(
+        this.constructUrl(Endpoints.DISTRIBUTION_PARAMS)
+      ),
+      this.getStakingPool(),
+    ];
+    const res = (await Promise.all(promises)) as [
+      InflationResponse,
+      DistributionParamsResponse,
+      StakingPoolResponse
+    ];
+
+    if (res[2] && res[2].pool.bonded_tokens) {
+      Big(res[0].inflation)
+        .mul(Big(1).minus(res[1].params.community_tax))
+        .div(res[2].pool.bonded_tokens)
+        .toString();
+    }
+    return "0";
   }
 }
