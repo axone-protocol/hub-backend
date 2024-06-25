@@ -19,4 +19,6 @@ export const ConfigSchema = Joi.object({
   OKP4_WSS_URL: Joi.string().required(),
   VALIDATOR_SIGNATURE: Joi.number().required(),
   SUPPLY_CHANGE_CACHE_TTL: Joi.number().required(),
+  EXCHANGE_RATE_BASE_URL: Joi.string().required(),
+  EXCHANGE_RATE_API_KEY: Joi.string().required(),
 }).required();

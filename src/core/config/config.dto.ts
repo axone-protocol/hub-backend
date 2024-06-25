@@ -5,6 +5,10 @@ export interface ConfigDto {
   redis: RedisConfig;
   cache: CacheConfig;
   keybase: KeybaseConfig;
+  exchangeRate: {
+    url: string;
+    key: string;
+  };
 }
 
 export interface AppConfig {

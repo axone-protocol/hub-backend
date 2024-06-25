@@ -7,6 +7,7 @@ import { StakingModule } from "./staking/staking.module";
 import { TokenModule } from "./token/token.module";
 import { GovernanceModule } from "./governance/governance.module";
 import { WalletModule } from "./wallet/wallet.module";
+import { GeneralModule } from "./general/general.module";
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { WalletModule } from "./wallet/wallet.module";
     StakingModule,
     GovernanceModule,
     WalletModule,
+    GeneralModule,
   ],
 })
 export class AppModule {}
