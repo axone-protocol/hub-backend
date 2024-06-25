@@ -32,4 +32,8 @@ export const config: ConfigDto = {
   keybase: {
     url: process.env.KEYBASE_URL!,
   },
+  exchangeRate: {
+    url: process.env.EXCHANGE_RATE_BASE_URL!,
+    key: process.env.EXCHANGE_RATE_API_KEY!,
+  },
 };
