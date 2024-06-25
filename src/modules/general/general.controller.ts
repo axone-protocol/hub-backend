@@ -1,7 +1,8 @@
 import { Controller, Get } from "@nestjs/common";
-import { GeneralService } from "./generl.service";
+import { GeneralService } from "./general.service";
+import { Routes } from "@core/enums/routes.enum";
 
-@Controller()
+@Controller(Routes.GENERAL)
 export class GeneralController {
   constructor(private readonly generalService: GeneralService) {}
 

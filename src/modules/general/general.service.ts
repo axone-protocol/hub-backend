@@ -19,8 +19,8 @@ export class GeneralService implements OnModuleInit {
   async fetchAndCacheExchangeRates() {
     const rateRes = await this.exchangeRate.getLatest();
     const dto = {
-      EUR: Big(rateRes.conversion_rates.EUR).toFixed(2),
-      USD: Big(1).div(rateRes.conversion_rates.EUR).toNumber().toFixed(2),
+      EUR: +Big(rateRes.conversion_rates.EUR).toFixed(2),
+      USD: +Big(1).div(rateRes.conversion_rates.EUR).toFixed(2),
     };
     await this.redisService.set("general_exchange_rates", JSON.stringify(dto));
   }

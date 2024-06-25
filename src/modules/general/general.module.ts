@@ -2,7 +2,7 @@ import { ExchangeRateService } from "@core/lib/exchange-rate.service";
 import { HttpService } from "@core/lib/http.service";
 import { Module } from "@nestjs/common";
 import { GeneralController } from "./general.controller";
-import { GeneralService } from "./generl.service";
+import { GeneralService } from "./general.service";
 import { RedisService } from "@core/lib/redis.service";
 
 @Module({
