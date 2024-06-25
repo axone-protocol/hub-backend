@@ -4,4 +4,5 @@ export enum RouteParam {
   HEIGHT = ':height',
   PARAMS_TYPE = ':params_type',
   PROPOSAL_ID = ':proposal_id',
+  ADDRESS = ':address',
 }

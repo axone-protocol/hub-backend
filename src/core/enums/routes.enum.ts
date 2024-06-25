@@ -3,4 +3,5 @@ export enum Routes {
   STAKING = 'staking',
   TOKEN = 'token',
   GOVERNANCE = 'governance',
+  WALLET = 'wallet',
 }
