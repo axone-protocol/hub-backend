@@ -28,6 +28,7 @@ import { ValidatorStatus } from "./enums/validator-status.enum";
 import { InflationResponse } from "./responses/inflation.response";
 import { DistributionParamsResponse } from "./responses/distribution-params.response";
 import Big from "big.js";
+import { BalancesResponse } from "./responses/balances.response";
 
 @Injectable()
 export class Okp4Service {
@@ -270,5 +271,26 @@ export class Okp4Service {
         .toString();
     }
     return "0";
+  }
+
+  async getBalances(
+    addr: string,
+    limit?: number,
+    offset?: number
+  ): Promise<BalancesResponse> {
+    let params = undefined;
+    if (limit && offset) {
+      params = createUrlParams({
+        "pagination.offset": offset.toString(),
+        "pagination.limit": limit.toString(),
+        "pagination.count_total": true.toString(),
+      });
+    }
+    return this.getWithErrorHandling(
+      this.constructUrl(
+        Endpoints.BALANCES.replace(RouteParam.ADDRESS, addr),
+        params
+      )
+    );
   }
 }
