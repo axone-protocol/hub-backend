@@ -5,6 +5,5 @@ export const GetBalancesSchema = Joi.object({
   limit: Joi.number().optional(),
   offset: Joi.number().optional(),
 })
-  .keys()
   .and("limit", "offset")
   .required();

@@ -113,7 +113,7 @@ export class Okp4Service {
     offset?: number
   ): Promise<ValidatorDelegationsResponse> {
     let params = undefined;
-    if (limit && offset) {
+    if (limit !== undefined && offset !== undefined) {
       params = createUrlParams({
         "pagination.offset": offset.toString(),
         "pagination.limit": limit.toString(),
@@ -280,7 +280,7 @@ export class Okp4Service {
     offset?: number
   ): Promise<BalancesResponse> {
     let params = undefined;
-    if (limit && offset) {
+    if (limit !== undefined && offset !== undefined) {
       params = createUrlParams({
         "pagination.offset": offset.toString(),
         "pagination.limit": limit.toString(),
@@ -301,7 +301,7 @@ export class Okp4Service {
     offset?: number
   ): Promise<GetProposalVotesResponse> {
     let params = undefined;
-    if (limit && offset) {
+    if (limit !== undefined && offset !== undefined) {
       params = createUrlParams({
         "pagination.offset": offset.toString(),
         "pagination.limit": limit.toString(),

@@ -307,8 +307,8 @@ export class StakingService implements OnModuleInit {
       validatorDelegations,
       pagination: {
         total: res.pagination.total,
-        limit: payload.limit || null,
-        offset: payload.offset || null,
+        limit: payload.limit === undefined ? null : payload.limit,
+        offset: payload.offset === undefined ? null : payload.offset,
       },
     };
   }
@@ -696,8 +696,8 @@ export class StakingService implements OnModuleInit {
       voters,
       pagination: {
         total: +res.pagination.total,
-        limit: payload.limit || null,
-        offset: payload.offset || null,
+        limit: payload.limit === undefined ? null : payload.limit,
+        offset: payload.offset === undefined ? null : payload.offset,
       },
     };
   }
