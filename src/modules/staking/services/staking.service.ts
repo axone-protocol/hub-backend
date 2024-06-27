@@ -549,8 +549,24 @@ export class StakingService implements OnModuleInit {
 
   private async fetchProposals() {
     const proposals = await this.okp4Service.getProposals();
-    await this.cache.setProposals(proposals);
-    return proposals;
+    const proposalsWithTurnout = [];
+
+    for (const proposal of proposals.proposals) {
+      const quorum = await this.calculateQuorum(proposal);
+      proposalsWithTurnout.push({
+        ...proposal,
+        turnout: quorum,
+      });
+    }
+
+    const view = {
+      pagination: proposals.pagination,
+      proposals: proposalsWithTurnout,
+    };
+
+    await this.cache.setProposals(view);
+
+    return view;
   }
 
   async getProposals() {
