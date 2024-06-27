@@ -28,6 +28,9 @@ import { RecentlyProposedBlockDto } from "../dtos/recently-proposed-block.dto";
 import { SignatureDto } from "../dtos/signature.dto";
 import { SignatureViewStatus } from "../enums/signature-view-status.enum";
 import { Reward } from "@core/lib/okp4/responses/delegators-rewards.response";
+import { Proposal } from "@core/lib/okp4/responses/get-proposals.response";
+import { createHash } from "crypto";
+import { GetProposalVotesDto } from "../dtos/get-proposal-votes.dto";
 
 @Injectable()
 export class StakingService implements OnModuleInit {
@@ -164,10 +167,9 @@ export class StakingService implements OnModuleInit {
       totalValidators: rez[0].pagination.total,
       apr: rez[1],
       totalStaked,
-      bondedTokens: Big(rez[3].pool.bonded_tokens)
-        .div(rez[2]!.amount)
-        .mul(100)
-        .toString(),
+      bondedTokens: toPercents(
+        Big(rez[3].pool.bonded_tokens).div(rez[2]!.amount)
+      ),
     };
 
     await this.cache.setGlobalStakedOverview(dto);
@@ -563,8 +565,16 @@ export class StakingService implements OnModuleInit {
 
   private async fetchProposal(proposalId: string | number) {
     const proposal = await this.okp4Service.getProposal(proposalId);
-    await this.cache.setProposal(proposalId, proposal);
-    return proposal;
+    const proposalVote = await this.fetchProposalVote(proposal.proposal);
+    const proposalWithVote = {
+      pagination: proposal.pagination,
+      proposal: {
+        ...proposal.proposal,
+        ...proposalVote,
+      },
+    };
+    await this.cache.setProposal(proposalId, proposalWithVote);
+    return proposalWithVote;
   }
 
   async getProposal(proposalId: string | number) {
@@ -575,5 +585,124 @@ export class StakingService implements OnModuleInit {
     }
 
     return cache;
+  }
+
+  async fetchProposalVote(proposal: Proposal) {
+    const voteOverview = await this.calculateVoteOverview(proposal);
+    const vote = this.calculateVote(proposal);
+    return {
+      vote,
+      voteOverview,
+    };
+  }
+
+  private async calculateVoteOverview(proposal: Proposal) {
+    const quorum = await this.calculateQuorum(proposal);
+    const threshold = await this.calculateThreshold(proposal);
+    const votingPeriod = {
+      start: proposal.voting_start_time,
+      end: proposal.voting_end_time,
+    };
+    return {
+      quorum,
+      threshold,
+      votingPeriod,
+    };
+  }
+
+  private async calculateQuorum(proposal: Proposal): Promise<string> {
+    const votesSum = this.voteSum(proposal);
+    const pool = await this.okp4Service.getStakingPool();
+
+    if (!pool?.pool?.bonded_tokens) return "0";
+
+    return toPercents(Big(votesSum).div(pool.pool.bonded_tokens));
+  }
+
+  private voteSum(proposal: Proposal): number {
+    return Big(proposal.final_tally_result.yes_count)
+      .plus(proposal.final_tally_result.abstain_count)
+      .plus(proposal.final_tally_result.no_count)
+      .plus(proposal.final_tally_result.no_with_veto_count)
+      .toNumber();
+  }
+
+  private async calculateThreshold(proposal: Proposal): Promise<string> {
+    return toPercents(
+      Big(proposal.final_tally_result.yes_count).div(
+        Big(proposal.final_tally_result.yes_count)
+          .plus(proposal.final_tally_result.no_count)
+          .plus(proposal.final_tally_result.no_with_veto_count)
+      )
+    );
+  }
+
+  private calculateVote(proposal: Proposal) {
+    const votingEnds = proposal.voting_end_time;
+    const total = proposal.total_deposit
+      .reduce((acc, deposit) => acc.plus(deposit.amount), Big(0))
+      .toString();
+    const voteSum = this.voteSum(proposal);
+    const tallyInPercents = {
+      yes: toPercents(Big(proposal.final_tally_result.yes_count).div(voteSum)),
+      no: toPercents(Big(proposal.final_tally_result.no_count).div(voteSum)),
+      abstain: toPercents(
+        Big(proposal.final_tally_result.abstain_count).div(voteSum)
+      ),
+      noWithVeto: toPercents(
+        Big(proposal.final_tally_result.no_with_veto_count).div(voteSum)
+      ),
+    };
+
+    return {
+      total,
+      votingEnds,
+      tallyInPercents,
+    };
+  }
+
+  async getProposalVotes(payload: GetProposalVotesDto) {
+    const cache = await this.cache.getProposalVotes(
+      this.createParamHash(payload)
+    );
+
+    if (!cache) {
+      return this.fetchProposalVotes(payload);
+    }
+
+    return cache;
+  }
+
+  private async fetchProposalVotes(payload: GetProposalVotesDto) {
+    const res = await this.okp4Service.getProposalVotes(
+      payload.id,
+      payload.limit,
+      payload.offset
+    );
+    const voters = res.votes.map((vote) => {
+      const maxWeightOption = vote.options.reduce(
+        (max, current) =>
+          parseFloat(current.weight) > parseFloat(max.weight) ? current : max,
+        vote.options[0]
+      );
+
+      return {
+        voter: vote.voter,
+        option: maxWeightOption.option,
+      };
+    });
+    await this.cache.setProposalVotes(this.createParamHash(payload), voters);
+    return {
+      voters,
+      pagination: {
+        total: +res.pagination.total,
+        limit: payload.limit || null,
+        offset: payload.offset || null,
+      },
+    };
+  }
+
+  private createParamHash(params: unknown): string {
+    return createHash("sha256").update(JSON.stringify(params)).digest("hex");
   }
 }

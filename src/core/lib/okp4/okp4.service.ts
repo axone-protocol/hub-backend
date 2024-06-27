@@ -29,6 +29,7 @@ import { InflationResponse } from "./responses/inflation.response";
 import { DistributionParamsResponse } from "./responses/distribution-params.response";
 import Big from "big.js";
 import { BalancesResponse } from "./responses/balances.response";
+import { GetProposalVotesResponse } from "./responses/get-proposal-votes.response";
 
 @Injectable()
 export class Okp4Service {
@@ -289,6 +290,27 @@ export class Okp4Service {
     return this.getWithErrorHandling(
       this.constructUrl(
         Endpoints.BALANCES.replace(RouteParam.ADDRESS, addr),
+        params
+      )
+    );
+  }
+
+  async getProposalVotes(
+    id: string,
+    limit?: number,
+    offset?: number
+  ): Promise<GetProposalVotesResponse> {
+    let params = undefined;
+    if (limit && offset) {
+      params = createUrlParams({
+        "pagination.offset": offset.toString(),
+        "pagination.limit": limit.toString(),
+        "pagination.count_total": true.toString(),
+      });
+    }
+    return this.getWithErrorHandling(
+      this.constructUrl(
+        Endpoints.PROPOSAL_VOTES.replace(RouteParam.PROPOSAL_ID, id),
         params
       )
     );

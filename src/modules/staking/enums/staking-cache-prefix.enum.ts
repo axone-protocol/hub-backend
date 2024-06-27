@@ -8,4 +8,5 @@ export enum StakingCachePrefix {
   PROPOSALS = "proposals",
   PROPOSAL = "proposal",
   LAST_BLOCK = "last_block",
+  PROPOSAL_VOTERS = "proposal_voters",
 }

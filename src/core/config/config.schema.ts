@@ -21,4 +21,5 @@ export const ConfigSchema = Joi.object({
   SUPPLY_CHANGE_CACHE_TTL: Joi.number().required(),
   EXCHANGE_RATE_BASE_URL: Joi.string().required(),
   EXCHANGE_RATE_API_KEY: Joi.string().required(),
+  PROPOSAL_VOTERS_TTL: Joi.string().required(),
 }).required();

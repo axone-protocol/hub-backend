@@ -16,4 +16,5 @@ export enum Endpoints {
   INFLATION = 'cosmos/mint/v1beta1/inflation',
   DISTRIBUTION_PARAMS = 'cosmos/distribution/v1beta1/params',
   BALANCES = 'cosmos/bank/v1beta1/balances/:address',
+  PROPOSAL_VOTES = '/cosmos/gov/v1/proposals/:proposal_id/votes',
 }
