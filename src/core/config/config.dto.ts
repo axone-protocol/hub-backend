@@ -42,6 +42,7 @@ export interface CacheConfig {
   proposals: number;
   proposal: number;
   supplyChange: number;
+  proposalVoters: number;
 }
 
 export interface KeybaseConfig {

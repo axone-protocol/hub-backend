@@ -28,6 +28,7 @@ export const config: ConfigDto = {
     proposals: +process.env.PROPOSALS_CACHE_TTL!,
     proposal: +process.env.PROPOSAL_CACHE_TTL!,
     supplyChange: +process.env.SUPPLY_CHANGE_CACHE_TTL!,
+    proposalVoters: +process.env.PROPOSAL_VOTERS_TTL!,
   },
   keybase: {
     url: process.env.KEYBASE_URL!,

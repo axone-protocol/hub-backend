@@ -10,6 +10,8 @@ import { MyValidatorDelegationDto } from "./dtos/my-validator-delegation.dto";
 import { ValidatorDelegationsSchema } from "./schemas/validator-delegations.schema";
 import { ValidatorDelegationsDto } from "./dtos/validator-delegations.dto";
 import { StringSchema } from "@core/schemas/string.schema";
+import { GetProposalVotersSchema } from "./schemas/get-proposal-voters.schema";
+import { Pagination } from "@core/types/pagination.dto";
 
 @Controller(Routes.STAKING)
 export class StakingController {
@@ -82,9 +84,22 @@ export class StakingController {
 
   @Get(StakingEndpoints.PROPOSAL)
   async getProposal(
-      @Param(QueryParam.PROPOSAL_ID, new SchemaValidatePipe(StringSchema))
-        proposalId: string,
+    @Param(QueryParam.PROPOSAL_ID, new SchemaValidatePipe(StringSchema))
+      proposalId: string,
   ) {
     return this.service.getProposal(proposalId);
+  }
+
+  @Get(StakingEndpoints.PROPOSAL_VOTERS)
+  async getProposalVoters(
+    @Param(QueryParam.PROPOSAL_ID, new SchemaValidatePipe(StringSchema))
+      id: string,
+    @Query(new SchemaValidatePipe(GetProposalVotersSchema))
+      query: Pagination
+  ) {
+    return this.service.getProposalVotes({
+      id,
+      ...query
+    })
   }
 }

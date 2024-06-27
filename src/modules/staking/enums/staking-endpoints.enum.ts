@@ -9,4 +9,5 @@ export enum StakingEndpoints {
   VALIDATORS_RECENTLY_PROPOSED_BLOCKS = '/validators/:address/recently-proposed-blocks',
   PROPOSALS = '/proposals',
   PROPOSAL = '/proposals/:proposal_id',
+  PROPOSAL_VOTERS = '/proposals/:proposal_id/voters',
 }

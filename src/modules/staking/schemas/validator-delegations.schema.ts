@@ -1,10 +1,9 @@
-import * as Joi from 'joi';
+import * as Joi from "joi";
 
 export const ValidatorDelegationsSchema = Joi.object({
   address: Joi.string().required(),
   limit: Joi.number().optional(),
   offset: Joi.number().optional(),
 })
-  .keys()
-  .and('limit', 'offset')
+  .and("limit", "offset")
   .required();

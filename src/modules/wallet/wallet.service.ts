@@ -17,8 +17,8 @@ export class WalletService {
       balances: res.balances,
       pagination: {
         total: res.pagination.total,
-        limit: payload.limit || null,
-        offset: payload.offset || null,
+        limit: payload.limit === undefined ? null : payload.limit,
+        offset: payload.offset === undefined ? null : payload.offset,
       },
     };
   }

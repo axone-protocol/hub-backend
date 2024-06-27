@@ -140,4 +140,19 @@ export class StakingCache {
   async getProposal(proposalId: string | number): Promise<GetProposalResponse> {
     return this.getObjByRedisKey(this.createRedisKey(StakingCachePrefix.PROPOSAL, String(proposalId)));
   }
+
+  async setProposalVotes(hash: string, voters: unknown[]) {
+    const serialized = JSON.stringify(voters);
+    await this.redisService.setWithTTL(this.createRedisKey(StakingCachePrefix.PROPOSAL_VOTERS, hash), serialized, config.cache.proposalVoters);
+  }
+
+  async getProposalVotes(hash: string) {
+    const serialized = await this.redisService.get(this.createRedisKey(StakingCachePrefix.PROPOSAL_VOTERS, hash));
+
+    if (!serialized) {
+      return null;
+    }
+
+    return JSON.parse(serialized as string);
+  }
 }

@@ -1,7 +1,6 @@
 import * as Joi from "joi";
 
-export const GetBalancesSchema = Joi.object({
-  address: Joi.string().required(),
+export const GetProposalVotersSchema = Joi.object({
   limit: Joi.number().optional(),
   offset: Joi.number().optional(),
 })
