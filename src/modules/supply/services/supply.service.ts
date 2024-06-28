@@ -14,6 +14,7 @@ import { Log } from "@core/loggers/log";
 import { SupplyCache } from "./supply.cache";
 import { TimeBucketDto } from "../dtos/time-bucket.dto";
 import { ChangeIntervalDto } from "../dtos/change-interval.dto";
+import { SupplyChangeDto } from "../dtos/supply-change.dto";
 
 @Injectable()
 export class SupplyService implements OnModuleInit {
@@ -127,7 +128,7 @@ export class SupplyService implements OnModuleInit {
   }
 
   async getSupplyChange(range: Range) {
-    const cache = await this.cache.getSupplyChange(range);
+    const cache = await this.cache.getSupplyChange(range) as SupplyChangeDto;
 
     if(cache === null) {
       return this.cacheSupplyChange(range);
@@ -139,7 +140,7 @@ export class SupplyService implements OnModuleInit {
   private async cacheSupplyChange(range: Range) {
     const previousSupply = await this.getPastSupplyByRange(range);
     const currentSupply = await this.getSupplyByOrder();
-    const supplyChange = {
+    const supplyChange: SupplyChangeDto = {
       time: new Date(),
       change: 0,
       burnt: 0,
@@ -148,8 +149,8 @@ export class SupplyService implements OnModuleInit {
 
     if (previousSupply && currentSupply) {
       supplyChange.time = currentSupply.time;
-      supplyChange.change = Big(currentSupply.supply).minus(previousSupply.supply).toNumber();
-      supplyChange.issuance = supplyChange.change;
+      supplyChange.change = supplyChange.issuance - supplyChange.burnt;
+      supplyChange.issuance = Big(currentSupply.supply).minus(previousSupply.supply).toNumber();
     }
 
     await this.cache.setSupplyChange(range, supplyChange);
@@ -207,18 +208,17 @@ export class SupplyService implements OnModuleInit {
       return Big(supplyChangeByPeriod._sum.change).toFixed(2);
     }
 
-    return 0;
+    return "0";
   }
 
   async getCharts(range: Range) {
-    const issuance = await this.getSupplyChange(range);
+    const res = await this.getSupplyChange(range);
     const growth = await this.getSupplyGrowth(range);
-    const burnt = 0;
 
     return {
-      issuance,
-      growth,
-      burnt,
+      issuance: res.issuance,
+      growth: Number.parseFloat(growth),
+      burnt: res.burnt,
     }
   }
 }
