@@ -1,6 +1,5 @@
 import { config } from "@core/config/config";
 import { Injectable } from "@nestjs/common";
-import { createHash } from 'crypto';
 import { StakingCachePrefix } from "../enums/staking-cache-prefix.enum";
 import { RedisService } from "@core/lib/redis.service";
 import { v4 } from 'uuid';
@@ -13,7 +12,7 @@ export class StakingCache {
     private readonly redisService: RedisService,
   ) { }
 
-  private async getObjByRedisKey(key: string) {
+  private async getObjectFromRedis<T>(key: string): Promise<T | null> {
     const serialized = await this.redisService.get(key);
 
     if (!serialized) {
@@ -29,7 +28,7 @@ export class StakingCache {
   }
 
   async getMyStakedOverview(address: string) {
-    return this.getObjByRedisKey(this.createRedisKey(address));
+    return this.getObjectFromRedis(this.createRedisKey(address));
   }
 
   async setGlobalStakedOverview(data: unknown) {
@@ -38,7 +37,7 @@ export class StakingCache {
   }
 
   async getGlobalStakedOverview() {
-    return this.getObjByRedisKey(this.createRedisKey(StakingCachePrefix.GLOBAL_OVERVIEW));
+    return this.getObjectFromRedis(this.createRedisKey(StakingCachePrefix.GLOBAL_OVERVIEW));
   }
 
   async setValidators(validators: unknown[]) {
@@ -47,28 +46,19 @@ export class StakingCache {
   }
 
   async getValidators() {
-    return this.getObjByRedisKey(this.createRedisKey(StakingCachePrefix.VALIDATORS));
+    return this.getObjectFromRedis(this.createRedisKey(StakingCachePrefix.VALIDATORS));
   }
 
-  async setValidatorDelegation(address: string, validatorAddress: string, data: unknown) {
-    const serialized = JSON.stringify(data);
-    const hash = this.createValidatorDelegationHash(address, validatorAddress);
+  async setValidatorDelegation(hash: string, data: unknown) {
     await this.redisService.setWithTTL(
       this.createRedisKey(hash),
-      serialized,
+      JSON.stringify(data),
       config.cache.validators
     );
   }
 
-  async getValidatorDelegation(address: string, validatorAddress: string) {
-    const hash = this.createValidatorDelegationHash(address, validatorAddress);
-    return this.getObjByRedisKey(this.createRedisKey(hash));
-  }
-
-  private createValidatorDelegationHash(address: string, validatorAddress: string) {
-    const hash = createHash('sha256');
-    hash.update(`${address}_${validatorAddress}`);
-    return hash.digest('hex');
+  async getValidatorDelegation(hash: string) {
+    return this.getObjectFromRedis(this.createRedisKey(hash));
   }
 
   async setValidatorImg(id: string, imgUrl: string) {
@@ -94,7 +84,7 @@ export class StakingCache {
 
   async setRecentlyProposedBlock(address: string, block: unknown) {
     const key = this.createRedisKey(this.createRedisKey(StakingCachePrefix.VALIDATOR_RECENTLY_PROPOSED_BLOCKS, address), v4());
-    this.redisService.setWithTTL(key, JSON.stringify(block), config.cache.validatorSignature);
+    this.redisService.setWithTTL(key, JSON.stringify(block), config.cache.validatorRecentlyProposedBlock);
   }
 
   async getRecentlyProposedBlock(address: string) {
@@ -128,8 +118,8 @@ export class StakingCache {
     await this.redisService.setWithTTL(this.createRedisKey(StakingCachePrefix.PROPOSALS), serialized, config.cache.proposals);
   }
 
-  async getProposals(): Promise<GetProposalsResponse> {
-    return this.getObjByRedisKey(this.createRedisKey(StakingCachePrefix.PROPOSALS));
+  async getProposals() {
+    return this.getObjectFromRedis(this.createRedisKey(StakingCachePrefix.PROPOSALS));
   }
 
   async setProposal(proposalId: string | number, proposal: GetProposalResponse) {
@@ -137,8 +127,8 @@ export class StakingCache {
     await this.redisService.setWithTTL(this.createRedisKey(StakingCachePrefix.PROPOSAL, String(proposalId)), serialized, config.cache.proposal);
   }
 
-  async getProposal(proposalId: string | number): Promise<GetProposalResponse> {
-    return this.getObjByRedisKey(this.createRedisKey(StakingCachePrefix.PROPOSAL, String(proposalId)));
+  async getProposal(proposalId: string | number) {
+    return this.getObjectFromRedis(this.createRedisKey(StakingCachePrefix.PROPOSAL, String(proposalId)));
   }
 
   async setProposalVotes(hash: string, voters: unknown[]) {
