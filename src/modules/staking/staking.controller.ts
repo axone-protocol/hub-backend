@@ -74,4 +74,9 @@ export class StakingController {
   ) {
     return this.service.getValidatorRecentlyProposedBlocks(address);
   }
+
+  @Get(StakingEndpoints.RECENTLY_PROPOSED_BLOCKS)
+  async getRecentlyProposedBlocks() {
+    return this.service.getRecentlyProposedBlocks();
+  }
 }

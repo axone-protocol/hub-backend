@@ -342,16 +342,19 @@ export class StakingService implements OnModuleInit {
   }
 
   async getValidatorByAddress(address: string) {
-    const validators: ValidatorsViewDto[] = await this.getValidators();
-    const validator = validators.find(
-      (validator) => validator.address === address
-    );
-
+    const validator = await this.findSingleValidator(address);
     if (!validator) {
       throw new BadRequestException(StakingError.VALIDATOR_ADDRESS_NOT_EXISTS);
     }
 
     return validator;
+  }
+
+  private async findSingleValidator(address: string) {
+    const validators: ValidatorsViewDto[] = await this.getValidators();
+    return validators.find(
+      (validator) => validator.address === address
+    );
   }
 
   async newBlock(res: BlocksResponse) {
@@ -379,16 +382,21 @@ export class StakingService implements OnModuleInit {
             signature.validator_address === res.block.header.proposer_address
           ) {
             signatureView.status = SignatureViewStatus.PROPOSED;
-
+            const validator = await this.findSingleValidator(validatorAddress);
+            const blockWithValidatorInfo = {
+              ...blockView,
+              img: validator?.logo,
+              name: validator?.description.moniker
+            }
             // Cache the recently proposed block and emit an event
-            await this.cache.setRecentlyProposedBlock(
+            await this.cache.setValidatorRecentlyProposedBlock(
               validatorAddress,
-              blockView
+              blockWithValidatorInfo
             );
             this.eventEmitter.emit(
               Event.BLOCK_CACHED,
               validatorAddress,
-              blockView
+              blockWithValidatorInfo
             );
           }
 
@@ -510,7 +518,7 @@ export class StakingService implements OnModuleInit {
   private async getSortedRecentlyProposedBlocks(address: string) {
     try {
       const recentlyBlocks: RecentlyProposedBlockDto[] =
-        await this.cache.getRecentlyProposedBlock(address);
+        await this.cache.getValidatorRecentlyProposedBlocks(address);
       return recentlyBlocks.sort(
         (a, b) => Number.parseFloat(b.height) - Number.parseFloat(a.height)
       );
@@ -540,5 +548,10 @@ export class StakingService implements OnModuleInit {
     }
 
     return [];
+  }
+
+  async getRecentlyProposedBlocks() {
+    const recentlyProposedBlocks = await this.cache.getRecentlyProposedBlocks();
+    return recentlyProposedBlocks || [];
   }
 }

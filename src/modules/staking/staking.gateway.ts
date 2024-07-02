@@ -19,5 +19,6 @@ export class StakingGateway {
   @OnEvent(Event.BLOCK_CACHED)
   async blockUpdate(addr: string, block: unknown) {
     this.server.emit(`proposed_block.${addr}`, block);
+    this.server.emit(`proposed_block`, block);
   }
 }
