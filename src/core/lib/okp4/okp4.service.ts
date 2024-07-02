@@ -114,11 +114,7 @@ export class Okp4Service {
   ): Promise<ValidatorDelegationsResponse> {
     let params = undefined;
     if (limit !== undefined && offset !== undefined) {
-      params = createUrlParams({
-        "pagination.offset": offset.toString(),
-        "pagination.limit": limit.toString(),
-        "pagination.count_total": true.toString(),
-      });
+      params = this.okp4Pagination(limit, offset);
     }
     return this.getWithErrorHandling(
       this.constructUrl(
@@ -208,9 +204,13 @@ export class Okp4Service {
     );
   }
 
-  async getProposals(): Promise<GetProposalsResponse> {
+  async getProposals(limit?: number, offset?: number): Promise<GetProposalsResponse> {
+    let params = undefined;
+    if (limit !== undefined && offset !== undefined) {
+      params = this.okp4Pagination(limit, offset);
+    }
     return this.getWithErrorHandling(
-      this.constructUrl(Endpoints.GOV_PROPOSALS)
+      this.constructUrl(Endpoints.GOV_PROPOSALS, params)
     );
   }
 
@@ -281,11 +281,7 @@ export class Okp4Service {
   ): Promise<BalancesResponse> {
     let params = undefined;
     if (limit !== undefined && offset !== undefined) {
-      params = createUrlParams({
-        "pagination.offset": offset.toString(),
-        "pagination.limit": limit.toString(),
-        "pagination.count_total": true.toString(),
-      });
+      params = this.okp4Pagination(limit, offset);
     }
     return this.getWithErrorHandling(
       this.constructUrl(
@@ -302,11 +298,7 @@ export class Okp4Service {
   ): Promise<GetProposalVotesResponse> {
     let params = undefined;
     if (limit !== undefined && offset !== undefined) {
-      params = createUrlParams({
-        "pagination.offset": offset.toString(),
-        "pagination.limit": limit.toString(),
-        "pagination.count_total": true.toString(),
-      });
+      params = this.okp4Pagination(limit, offset);
     }
     return this.getWithErrorHandling(
       this.constructUrl(
@@ -314,5 +306,13 @@ export class Okp4Service {
         params
       )
     );
+  }
+
+  private okp4Pagination(limit: number, offset: number) {
+    return createUrlParams({
+      "pagination.offset": offset.toString(),
+      "pagination.limit": limit.toString(),
+      "pagination.count_total": true.toString(),
+    });
   }
 }
