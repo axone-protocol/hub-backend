@@ -43,6 +43,7 @@ export interface CacheConfig {
   proposal: number;
   supplyChange: number;
   proposalVoters: number;
+  validatorRecentlyProposedBlock: number;
 }
 
 export interface KeybaseConfig {

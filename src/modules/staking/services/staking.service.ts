@@ -126,11 +126,7 @@ export class StakingService implements OnModuleInit {
       )
       .reduce(
         (acc, val) =>
-          acc +
-          +(
-            val.reward.find(({ denom }) => config.app.tokenDenom === denom)
-              ?.amount || 0
-          ),
+          acc + Number.parseFloat(val.reward.find(({ denom }) => config.app.tokenDenom === denom)?.amount || "0"),
         0
       );
   }
@@ -144,7 +140,7 @@ export class StakingService implements OnModuleInit {
   }
 
   async getGlobalOverview() {
-    const cache = await this.cache.getGlobalStakedOverview();
+    const cache = await this.cache.getGlobalStakedOverview() as GlobalStakedOverviewDto;
 
     if (cache === null) {
       return this.fetchAndCacheGlobalStakedOverview();
@@ -167,9 +163,7 @@ export class StakingService implements OnModuleInit {
       totalValidators: rez[0].pagination.total,
       apr: rez[1],
       totalStaked,
-      bondedTokens: toPercents(
-        Big(rez[3].pool.bonded_tokens).div(rez[2]!.amount)
-      ),
+      bondedTokens: toPercents(Big(rez[3].pool.bonded_tokens).div(rez[2]!.amount)),
     };
 
     await this.cache.setGlobalStakedOverview(dto);
@@ -191,7 +185,7 @@ export class StakingService implements OnModuleInit {
   }
 
   async getValidators() {
-    const cache = await this.cache.getValidators();
+    const cache = await this.cache.getValidators() as Validator[];
 
     if (cache === null) {
       return this.fetchAndCacheValidators();
@@ -211,19 +205,13 @@ export class StakingService implements OnModuleInit {
     toView: Validator[]
   ): Promise<ValidatorsViewDto[]> {
     const view = [];
-    const globalOverview: GlobalStakedOverviewDto =
-      await this.getGlobalOverview();
+    const globalOverview: GlobalStakedOverviewDto = await this.getGlobalOverview();
 
     for (const validator of toView) {
-      const uptime = await this.calculateValidatorUptime(
-        validator.operator_address
-      );
-      const votingPower = Big(validator.delegator_shares)
-        .div(globalOverview.totalStaked)
-        .toNumber();
-      const logo = (await this.cache.getValidatorImg(
-        validator.description.identity
-      )) as string;
+      const uptime = await this.calculateValidatorUptime(validator.operator_address);
+      const votingPower = Big(validator.delegator_shares).div(globalOverview.totalStaked).toNumber();
+      const logo = (await this.cache.getValidatorImg(validator.description.identity)) as string;
+
       view.push({
         logo,
         description: {
@@ -245,18 +233,18 @@ export class StakingService implements OnModuleInit {
         commission: {
           updateTime: validator.commission.update_time,
           rate: toPercents(validator.commission.commission_rates.rate),
-          maxChangeRate: validator.commission.commission_rates.max_change_rate,
-          maxRate: validator.commission.commission_rates.max_rate,
+          maxChangeRate: toPercents(validator.commission.commission_rates.max_change_rate),
+          maxRate: toPercents(validator.commission.commission_rates.max_rate),
         },
       });
     }
+
     return view;
   }
 
   async getMyValidatorDelegation(payload: MyValidatorDelegationDto) {
     const cache = await this.cache.getValidatorDelegation(
-      payload.address,
-      payload.validatorAddress
+      this.createValidatorDelegationHash(payload.address, payload.validatorAddress)
     );
 
     if (cache === null) {
@@ -280,12 +268,17 @@ export class StakingService implements OnModuleInit {
     };
 
     await this.cache.setValidatorDelegation(
-      payload.address,
-      payload.validatorAddress,
+      this.createValidatorDelegationHash(payload.address, payload.validatorAddress),
       dto
     );
 
     return dto;
+  }
+
+  private createValidatorDelegationHash(address: string, validatorAddress: string) {
+    const hash = createHash('sha256');
+    hash.update(`${address}_${validatorAddress}`);
+    return hash.digest('hex');
   }
 
   async getValidatorDelegations(payload: ValidatorDelegationsDto) {
@@ -433,7 +426,7 @@ export class StakingService implements OnModuleInit {
     return {
       height: res.block.last_commit.height,
       blockHash: res.block.last_commit.block_id.hash,
-      txs: res.block.data.txs.length,
+      txs: String(res.block.data.txs.length),
       time: new Date(),
     };
   }
@@ -459,7 +452,11 @@ export class StakingService implements OnModuleInit {
   private async createValidatorAddrToPubkeyMap() {
     const map = new Map();
     await this.fetchAndCacheValidators();
-    const validators: Validator[] = await this.cache.getValidators();
+    const validators = await this.cache.getValidators() as Validator[];
+
+    if(!validators) {
+      Log.warn('Validators list empty');
+    }
 
     for (const validator of validators) {
       const pubkey = this.okp4Service
