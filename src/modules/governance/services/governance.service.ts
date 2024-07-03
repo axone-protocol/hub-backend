@@ -28,7 +28,7 @@ export class GovernanceService implements OnModuleInit {
       const govProposals = await this.okp4Service.getProposals();
 
       const govOverview: GovOverviewDto = {
-        totalProposals: Number.parseInt(govProposals.pagination.total),
+        totalProposals: govProposals.pagination.total,
         currentProposals: this.currentProposals(govProposals.proposals),
         votingPeriod: this.votingPeriodToView(
           govResponse.voting_params.voting_period
@@ -56,7 +56,7 @@ export class GovernanceService implements OnModuleInit {
         return count;
       }
       return acc;
-    }, 0);
+    }, 0).toString();
   }
 
   private votingPeriodToView(votingPeriod: string) {

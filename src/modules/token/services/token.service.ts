@@ -33,7 +33,6 @@ export class TokenService implements OnModuleInit {
       [Range.DAY, { interval: DBTimeInterval.TWO_HOUR, count: 12 }],
       [Range.WEEK, { interval: DBTimeInterval.SIX_HOUR, count: 28 }],
       [Range.MONTH, { interval: DBTimeInterval.DAY, count: 30 }],
-      [Range.THREE_MONTH, { interval: DBTimeInterval.THREE_DAY, count: 30 }],
       [Range.YEAR, { interval: DBTimeInterval.MONTH, count: 12 }],
     ]);
   }
@@ -109,7 +108,7 @@ export class TokenService implements OnModuleInit {
         change: mcap!.change,
       },
       volume: res.volume_24h,
-      apr,
+      apr: isNaN(Number(apr)) ? 0 : Number(apr),
     };
 
     await this.cache.cacheTokenInfo(tokenInfoDto);

@@ -1,6 +1,6 @@
 export interface GovOverviewDto {
-  totalProposals: number;
-  currentProposals: number;
+  totalProposals: string;
+  currentProposals: string;
   votingPeriod: string;
   depositRequired: string;
 }

@@ -2,7 +2,7 @@ export interface TokenInfoDto {
 	price: ItemWithChange;
 	marketCap: ItemWithChange;
 	volume: number;
-	apr: string;
+	apr: number;
 }
 
 export interface ItemWithChange {
