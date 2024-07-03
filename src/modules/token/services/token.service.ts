@@ -108,7 +108,7 @@ export class TokenService implements OnModuleInit {
         change: mcap!.change,
       },
       volume: res.volume_24h,
-      apr: Number(apr),
+      apr: isNaN(Number(apr)) ? 0 : Number(apr),
     };
 
     await this.cache.cacheTokenInfo(tokenInfoDto);
