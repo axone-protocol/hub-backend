@@ -80,13 +80,21 @@ export class StakingCache {
     return signatures.map(signature => JSON.parse(signature!));
   }
 
-  async setRecentlyProposedBlock(address: string, block: unknown) {
+  async setValidatorRecentlyProposedBlock(address: string, block: unknown) {
     const key = this.createRedisKey(this.createRedisKey(StakingCachePrefix.VALIDATOR_RECENTLY_PROPOSED_BLOCKS, address), v4());
     this.redisService.setWithTTL(key, JSON.stringify(block), config.cache.validatorRecentlyProposedBlock);
   }
 
-  async getRecentlyProposedBlock(address: string) {
+  async getValidatorRecentlyProposedBlocks(address: string) {
     const pattern = this.createRedisKey(this.createRedisKey(StakingCachePrefix.VALIDATOR_RECENTLY_PROPOSED_BLOCKS, address), '*');
+    const keys = await this.redisService.keys(pattern);
+    const recentlyProposedBlocks = await Promise.all(keys.map((key: string) => this.redisService.get(key)));
+
+    return recentlyProposedBlocks.map(block => JSON.parse(block!));
+  }
+
+  async getRecentlyProposedBlocks() {
+    const pattern = this.createRedisKey(this.createRedisKey(StakingCachePrefix.VALIDATOR_RECENTLY_PROPOSED_BLOCKS), '*');
     const keys = await this.redisService.keys(pattern);
     const recentlyProposedBlocks = await Promise.all(keys.map((key: string) => this.redisService.get(key)));
 
