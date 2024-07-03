@@ -26,10 +26,10 @@ export class SupplyService implements OnModuleInit {
     private readonly cache: SupplyCache,
   ) {
     this.rangeTimeIntervalMap = new Map([
-      [Range.HOUR, { interval: DBTimeInterval.TWO_MINUTES, count: 30 }],
       [Range.DAY, { interval: DBTimeInterval.TWO_HOUR, count: 12 }],
       [Range.WEEK, { interval: DBTimeInterval.SIX_HOUR, count: 28 }],
       [Range.MONTH, { interval: DBTimeInterval.DAY, count: 30 }],
+      [Range.YEAR, { interval: DBTimeInterval.MONTH, count: 12 }],
       [Range.ALL, { interval: DBTimeInterval.MONTH}],
     ]);
   }
@@ -181,11 +181,10 @@ export class SupplyService implements OnModuleInit {
   private calculatePastDateByRange(range: Range): Date {
     let date = new Date();
     switch (range) {
-      case Range.FIVE_MIN: date = new Date(date.setMinutes(date.getMinutes() - 5)); break;
-      case Range.HOUR: date = new Date(date.setHours(date.getHours() - 1)); break;
       case Range.DAY: date = new Date(date.setDate(date.getDate() - 1)); break;
       case Range.WEEK: date = new Date(date.setDate(date.getDate() - 7)); break;
       case Range.MONTH: date = new Date(date.setMonth(date.getMonth() - 1)); break;
+      case Range.YEAR: date = new Date(date.setFullYear(date.getFullYear() - 1)); break;
     }
 
     return date;

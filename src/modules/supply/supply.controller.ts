@@ -4,11 +4,9 @@ import { SupplyEndpoints } from "./enums/supply-endpoints.enum";
 import { SupplyCache } from "./services/supply.cache";
 import { QueryParam } from "./enums/query-param.enum";
 import { SchemaValidatePipe } from "@core/pipes/schema-validate.pipe";
-import { HistoricalRangeSchema } from "./schemas/historical-range.schema";
 import { SupplyService } from "./services/supply.service";
-import { ChangeRangeSchema } from "./schemas/change-range.schema";
 import { Range } from "@core/enums/range.enum";
-import { ChartsRangeSchema } from "./schemas/charts-range.schema";
+import { RangeSchema } from "@core/schemas/range.schema";
 
 @Controller(Routes.SUPPLY)
 export class SupplyController {
@@ -19,7 +17,7 @@ export class SupplyController {
 
   @Get(SupplyEndpoints.HISTORICAL)
   async getHistoricalSupply(
-    @Query(QueryParam.RANGE, new SchemaValidatePipe(HistoricalRangeSchema))
+    @Query(QueryParam.RANGE, new SchemaValidatePipe(RangeSchema))
       range: Range
   ) {
     return this.cache.getSupplyHistorical(range);
@@ -32,7 +30,7 @@ export class SupplyController {
 
   @Get(SupplyEndpoints.CHANGE)
   async getSupplyChange(
-    @Query(QueryParam.RANGE, new SchemaValidatePipe(ChangeRangeSchema))
+    @Query(QueryParam.RANGE, new SchemaValidatePipe(RangeSchema))
       range: Range
   ) {
     return this.service.getSupplyChange(range);
@@ -40,7 +38,7 @@ export class SupplyController {
 
   @Get(SupplyEndpoints.CHARTS)
   async getCharts(
-    @Query(QueryParam.RANGE, new SchemaValidatePipe(ChartsRangeSchema))
+    @Query(QueryParam.RANGE, new SchemaValidatePipe(RangeSchema))
       range: Range
   ) {
     return this.service.getCharts(range);
