@@ -23,4 +23,5 @@ export const ConfigSchema = Joi.object({
   EXCHANGE_RATE_API_KEY: Joi.string().required(),
   PROPOSAL_VOTERS_TTL: Joi.string().required(),
   VALIDATOR_RECENTLY_PROPOSED_BLOCK_TTL: Joi.string().required(),
+  WALLET_REWARD_HISTORY_TTL: Joi.string().required(),
 }).required();

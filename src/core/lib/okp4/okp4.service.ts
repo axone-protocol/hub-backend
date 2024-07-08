@@ -30,6 +30,7 @@ import { DistributionParamsResponse } from "./responses/distribution-params.resp
 import Big from "big.js";
 import { BalancesResponse } from "./responses/balances.response";
 import { GetProposalVotesResponse } from "./responses/get-proposal-votes.response";
+import { RewardsHistoryResponse } from "./responses/rewards-history.response";
 
 @Injectable()
 export class Okp4Service {
@@ -304,6 +305,31 @@ export class Okp4Service {
       this.constructUrl(
         Endpoints.PROPOSAL_VOTES.replace(RouteParam.PROPOSAL_ID, id),
         params
+      )
+    );
+  }
+
+  async getWalletRewardsHistory(address: string, limit?: number, offset?: number): Promise<RewardsHistoryResponse> {
+    const wallet = {
+      "query": `message.sender='${address}'`,
+    };
+    let pagination = undefined;
+
+    if(limit !== undefined && offset !== undefined) {
+      pagination = {
+        "pagination.offset": offset.toString(),
+        "pagination.limit": limit.toString(),
+        "pagination.count_total": true.toString(),
+      }
+    }
+
+    return this.getWithErrorHandling(
+      this.constructUrl(
+        Endpoints.TXS,
+        createUrlParams({
+          ...pagination,
+          ...wallet,
+        })
       )
     );
   }

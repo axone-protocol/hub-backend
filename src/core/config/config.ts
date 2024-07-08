@@ -30,6 +30,7 @@ export const config: ConfigDto = {
     supplyChange: +process.env.SUPPLY_CHANGE_CACHE_TTL!,
     proposalVoters: +process.env.PROPOSAL_VOTERS_TTL!,
     validatorRecentlyProposedBlock: +process.env.VALIDATOR_RECENTLY_PROPOSED_BLOCK_TTL!,
+    walletRewardHistory: +process.env.WALLET_REWARD_HISTORY_TTL!,
   },
   keybase: {
     url: process.env.KEYBASE_URL!,

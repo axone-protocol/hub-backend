@@ -6,10 +6,10 @@ import { ProposalStatusEnum } from "@core/lib/okp4/enums/proposal-status.enum";
 import { GovernanceCache } from "./governance.cache";
 import { Log } from "@core/loggers/log";
 import { toPercents } from "@utils/to-percents";
-import { createHash } from "crypto";
 import { GetProposalVotesDto } from "../dto/get-proposal-votes.dto";
 import Big from "big.js";
 import { Pagination } from "@core/types/pagination.dto";
+import { hash } from "@utils/create-hash";
 
 @Injectable()
 export class GovernanceService implements OnModuleInit {
@@ -68,7 +68,7 @@ export class GovernanceService implements OnModuleInit {
   }
 
   async getProposals(payload: Pagination) {
-    const cache = await this.cache.getProposals(this.createParamHash(payload));
+    const cache = await this.cache.getProposals(hash(payload));
 
     if (cache === null) {
       return this.fetchProposals(payload);
@@ -98,7 +98,7 @@ export class GovernanceService implements OnModuleInit {
       proposals: proposalsWithTurnout,
     };
 
-    await this.cache.setProposals(view, this.createParamHash({ limit, offset }));
+    await this.cache.setProposals(view, hash({ limit, offset }));
 
     return view;
   }
@@ -201,9 +201,7 @@ export class GovernanceService implements OnModuleInit {
   }
 
   async getProposalVotes(payload: GetProposalVotesDto) {
-    const cache = await this.cache.getProposalVotes(
-      this.createParamHash(payload)
-    );
+    const cache = await this.cache.getProposalVotes(hash(payload));
 
     if (!cache) {
       return this.fetchProposalVotes(payload);
@@ -230,7 +228,7 @@ export class GovernanceService implements OnModuleInit {
         option: maxWeightOption.option,
       };
     });
-    await this.cache.setProposalVotes(this.createParamHash(payload), voters);
+    await this.cache.setProposalVotes(hash(payload), voters);
     return {
       voters,
       pagination: {
@@ -239,9 +237,5 @@ export class GovernanceService implements OnModuleInit {
         offset: payload.offset === undefined ? null : payload.offset,
       },
     };
-  }
-
-  private createParamHash(params: unknown): string {
-    return createHash("sha256").update(JSON.stringify(params)).digest("hex");
   }
 }

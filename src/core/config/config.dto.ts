@@ -44,6 +44,7 @@ export interface CacheConfig {
   supplyChange: number;
   proposalVoters: number;
   validatorRecentlyProposedBlock: number;
+  walletRewardHistory: number;
 }
 
 export interface KeybaseConfig {
