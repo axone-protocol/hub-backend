@@ -519,9 +519,7 @@ export class StakingService implements OnModuleInit {
     try {
       const recentlyBlocks: RecentlyProposedBlockDto[] =
         await this.cache.getValidatorRecentlyProposedBlocks(address);
-      return recentlyBlocks.sort(
-        (a, b) => Number.parseFloat(b.height) - Number.parseFloat(a.height)
-      );
+      return this.sortRecentlyProposedBlocks(recentlyBlocks);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       Log.warn(
@@ -530,6 +528,12 @@ export class StakingService implements OnModuleInit {
     }
 
     return [];
+  }
+
+  private sortRecentlyProposedBlocks(blocks: RecentlyProposedBlockDto[]) {
+    return blocks.sort(
+      (a, b) => Number.parseFloat(b.height) - Number.parseFloat(a.height)
+    );
   }
 
   private async getSortedValidatorSignatures(address: string) {
@@ -551,7 +555,13 @@ export class StakingService implements OnModuleInit {
   }
 
   async getRecentlyProposedBlocks() {
-    const recentlyProposedBlocks = await this.cache.getRecentlyProposedBlocks();
-    return recentlyProposedBlocks || [];
+    const blocks = await this.cache.getRecentlyProposedBlocks();
+
+    if(!blocks) {
+      return [];
+    }
+
+    const sorted = this.sortRecentlyProposedBlocks(blocks);
+    return sorted.slice(0, 5);
   }
 }
