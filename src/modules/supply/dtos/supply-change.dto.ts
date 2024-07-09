@@ -1,6 +1,6 @@
 export interface SupplyChangeDto {
     time: Date;
-    change: number;
-    burnt: number;
-    issuance: number;
+    change: string;
+    burnt: string;
+    issuance: string;
 }
