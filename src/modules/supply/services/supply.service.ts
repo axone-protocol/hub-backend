@@ -142,15 +142,15 @@ export class SupplyService implements OnModuleInit {
     const currentSupply = await this.getSupplyByOrder();
     const supplyChange: SupplyChangeDto = {
       time: new Date(),
-      change: 0,
-      burnt: 0,
-      issuance: 0,
+      change: '0',
+      burnt: '0',
+      issuance: '0',
     };
 
     if (previousSupply && currentSupply) {
       supplyChange.time = currentSupply.time;
-      supplyChange.change = supplyChange.issuance - supplyChange.burnt;
-      supplyChange.issuance = Big(currentSupply.supply).minus(previousSupply.supply).toNumber();
+      supplyChange.issuance = Big(currentSupply.supply).minus(previousSupply.supply).toFixed(2);
+      supplyChange.change = Big(supplyChange.issuance).minus(supplyChange.burnt).toFixed(2);
     }
 
     await this.cache.setSupplyChange(range, supplyChange);
