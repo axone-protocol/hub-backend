@@ -317,8 +317,8 @@ export class Okp4Service {
 
     if(limit !== undefined && offset !== undefined) {
       pagination = {
-        "pagination.offset": offset.toString(),
-        "pagination.limit": limit.toString(),
+        "page": offset.toString(),
+        "limit": limit.toString(),
         "pagination.count_total": true.toString(),
       }
     }
