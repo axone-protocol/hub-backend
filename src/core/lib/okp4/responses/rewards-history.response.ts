@@ -2,6 +2,7 @@ import { WithPaginationResponse } from "./with-pagination.response";
 
 export type RewardsHistoryResponse = WithPaginationResponse<{
     tx_responses: Tx[];
+    total: string;
 }>;
 
 
@@ -10,6 +11,14 @@ export interface Tx {
     code: number;
     timestamp: string;
     tx: {
+        auth_info: {
+            fee: {
+                amount: Array<{
+                    denom: string;
+                    amount: string;
+                }>
+            }
+        },
         body: {
             messages: Array<{
                 "@type": string
