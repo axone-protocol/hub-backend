@@ -15,6 +15,7 @@ import { SupplyCache } from "./supply.cache";
 import { TimeBucketDto } from "../dtos/time-bucket.dto";
 import { SupplyIntervalDto } from "../dtos/supply-interval.dto";
 import { SupplyChangeDto } from "../dtos/supply-change.dto";
+import { ChangeSupplyDto } from "../dtos/change-supply.dto";
 
 @Injectable()
 export class SupplyService implements OnModuleInit {
@@ -50,7 +51,7 @@ export class SupplyService implements OnModuleInit {
 
   private async calculateAndCacheSupplyHistoricalPrice(range: Range, { interval, count }: HistoricalChartConf) {
     try {
-      const historicalPrice = await this.timeBucket(interval, DBOrder.DESC, count);
+      const historicalPrice = await this.timeBucket(interval, DBOrder.ASC, count);
       await this.cache.setSupplyHistorical(range, historicalPrice);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
@@ -70,7 +71,26 @@ export class SupplyService implements OnModuleInit {
         ORDER BY interval ${order}
         ${limit ? `LIMIT ${limit}` : ''};
     `);
-    return this.fromBucket(bucket);
+    return this.addChangePercent(this.fromBucket(bucket));
+  }
+
+  private addChangePercent(intervalSupply: SupplyIntervalDto[]): ChangeSupplyDto[] {
+    const changeSupply: ChangeSupplyDto[] = [];
+    for (let i = 0; i < intervalSupply.length; i++) {
+      if(i === 0) {
+        changeSupply[i] = {
+          ...intervalSupply[i],
+          percentChange: "0"
+        }
+      } else {
+        changeSupply[i] = {
+          ...intervalSupply[i],
+          percentChange: Big(this.calculateSupplyChange(intervalSupply[i].change, intervalSupply[i-1].change)).toFixed(2),
+        }
+      }
+    }
+
+    return changeSupply;
   }
 
   private fromBucket(bucket: TimeBucketDto[]): SupplyIntervalDto[] {
@@ -110,7 +130,7 @@ export class SupplyService implements OnModuleInit {
     });
   }
 
-  private async calculateSupplyChange(newSupply?: string, pastSupply?: string) {
+  private calculateSupplyChange(newSupply?: string, pastSupply?: string) {
     let change = 0;
 
     if (newSupply && pastSupply) {
