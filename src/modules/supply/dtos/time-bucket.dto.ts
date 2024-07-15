@@ -1,4 +1,4 @@
 export type TimeBucketDto = {
-  sum_change: number;
+  avg_supply: string;
   interval: Date;
 };
