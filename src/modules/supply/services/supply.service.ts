@@ -13,7 +13,7 @@ import { DBTimeInterval } from "@core/enums/db-time-interval.enum";
 import { Log } from "@core/loggers/log";
 import { SupplyCache } from "./supply.cache";
 import { TimeBucketDto } from "../dtos/time-bucket.dto";
-import { ChangeIntervalDto } from "../dtos/change-interval.dto";
+import { SupplyIntervalDto } from "../dtos/supply-interval.dto";
 import { SupplyChangeDto } from "../dtos/supply-change.dto";
 
 @Injectable()
@@ -64,7 +64,7 @@ export class SupplyService implements OnModuleInit {
     limit?: number,
   ) {
     const bucket: TimeBucketDto[] = await this.prismaService.$queryRawUnsafe(`
-        SELECT time_bucket('${interval}', time) as interval, sum(change) as sum_change
+        SELECT time_bucket('${interval}', time) as interval, avg(CAST(supply AS DECIMAL)) as avg_supply
         FROM historical_supply
         GROUP BY interval
         ORDER BY interval ${order}
@@ -73,10 +73,10 @@ export class SupplyService implements OnModuleInit {
     return this.fromBucket(bucket);
   }
 
-  private fromBucket(bucket: TimeBucketDto[]): ChangeIntervalDto[] {
+  private fromBucket(bucket: TimeBucketDto[]): SupplyIntervalDto[] {
     return bucket.map((item) => ({
       time: item.interval,
-      change: item.sum_change,
+      change: item.avg_supply,
     }));
   }
     
@@ -95,12 +95,10 @@ export class SupplyService implements OnModuleInit {
   private async fetchCurrentSupply(): Promise<CurrentSupplyDto> {
     const { amount: { amount: supply } } = await this.okp4Service.getSupplyByDenom(config.app.tokenDenom);
     const time = new Date();
-    const change = await this.calculateSupplyChange(supply);
 
     return {
       time,
       supply,
-      change,
     }
   }
 
@@ -112,15 +110,14 @@ export class SupplyService implements OnModuleInit {
     });
   }
 
-  private async calculateSupplyChange(newSupply: string) {
-    const currentSupply = await this.getSupplyByOrder();
+  private async calculateSupplyChange(newSupply?: string, pastSupply?: string) {
     let change = 0;
 
-    if (currentSupply && newSupply) {
-      if (Number.parseFloat(currentSupply.supply) === 0) {
+    if (newSupply && pastSupply) {
+      if (Number.parseFloat(pastSupply) === 0) {
         change = Big(newSupply).toNumber();
       } else {
-        change = Big(newSupply).minus(currentSupply.supply).div(currentSupply.supply).toNumber();
+        change = Big(newSupply).minus(pastSupply).div(pastSupply).mul(100).toNumber();
       }
     }
         
@@ -192,22 +189,20 @@ export class SupplyService implements OnModuleInit {
 
   async getSupplyGrowth(range: Range) {
     const pastDate = this.calculatePastDateByRange(range);
-    const supplyChangeByPeriod = await this.prismaService.historicalSupply.aggregate({
+    const pastSupply = await this.prismaService.historicalSupply.findFirst({
       where: {
         time: {
-          gte: pastDate,
+          gte: pastDate
         }
       },
-      _sum: {
-        change: true,
+      orderBy: {
+        time: 'asc'
       }
     });
+  
+    const currentSupply = await this.getSupplyByOrder();
 
-    if (supplyChangeByPeriod._sum.change) {
-      return Big(supplyChangeByPeriod._sum.change).toFixed(2);
-    }
-
-    return "0";
+    return this.calculateSupplyChange(currentSupply?.supply, pastSupply?.supply);
   }
 
   async getCharts(range: Range) {
@@ -216,7 +211,7 @@ export class SupplyService implements OnModuleInit {
 
     return {
       issuance: res.issuance,
-      growth: Number.parseFloat(growth),
+      growth: Big(growth).toFixed(2),
       burnt: res.burnt,
     }
   }
