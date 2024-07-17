@@ -312,6 +312,7 @@ export class Okp4Service {
   async getWalletRewardsHistory(address: string, limit?: number, offset?: number): Promise<RewardsHistoryResponse> {
     const wallet = {
       "query": `message.sender='${address}'`,
+      "order_by": 'ORDER_BY_DESC'
     };
     let pagination = undefined;
 
