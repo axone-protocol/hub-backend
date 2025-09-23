@@ -41,7 +41,7 @@ jobs:
           password: ${{ secrets.OPS_TOKEN }}
 
       - name: Build and publish image(s)
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
